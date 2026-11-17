@@ -296,7 +296,9 @@ local function newCheck(parent, r, text, checked, onChange)
     label:SetPoint("LEFT", b, "RIGHT", 6, 0)
     label:SetWidth(r.labelW)
     label:SetJustifyH("LEFT")
-    label:SetWordWrap(false) -- one line, so two checkboxes never run into each other
+    -- Up to two lines: long translations wrap instead of being cut short.
+    label:SetWordWrap(true)
+    if label.SetMaxLines then label:SetMaxLines(2) end
     label:SetTextColor(c.text[1], c.text[2], c.text[3])
     label:SetText(text)
     UI.Flat(label)
