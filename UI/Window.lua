@@ -486,6 +486,14 @@ function Window:Create()
     Window:Refresh()
   end)
 
+  -- Back to the defaults. The window is rebuilt from them, so every control
+  -- (menus, checkboxes, search) shows the reset state at once.
+  local reset = UI.Button(f, S.resetButton, L.RESET_FILTERS, true)
+  reset:SetScript("OnClick", function()
+    ns.db.filters = ns.DefaultFilters()
+    Window:SetTheme(ns.themeName)
+  end)
+
   self.count = S.count and UI.Text(f, S.count, "GameFontDisableSmall", c.dim) or nil
 
   -- Footer credits, as in EAD Skill Preview: author, then the site in the accent color.

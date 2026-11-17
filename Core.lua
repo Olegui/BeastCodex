@@ -3,9 +3,13 @@ local L = ns.L
 
 ns.tests = {} -- { name, fn } pairs run by /beastcodex selftest
 
+-- Filters as a new player has them: everything shown, nothing searched.
+function ns.DefaultFilters()
+  return { showUntameable = true, onlyLocated = false, search = "" }
+end
+
 local function defaults()
-  return { minimap = {}, theme = ns.DEFAULT_THEME,
-    filters = { showUntameable = true, onlyLocated = false, search = "" } }
+  return { minimap = {}, theme = ns.DEFAULT_THEME, filters = ns.DefaultFilters() }
 end
 
 -- Returns a usable settings table from whatever was saved: a missing table,
@@ -180,7 +184,7 @@ end })
 
 table.insert(ns.tests, { "theme: every theme defines every rectangle the window needs", function()
   for name, t in pairs(ns.Themes) do
-    for _, key in ipairs({ "search", "searchClear", "close", "check", "check2", "themeButton", "credits", "list", "model", "name", "text",
+    for _, key in ipairs({ "search", "searchClear", "close", "check", "check2", "resetButton", "themeButton", "credits", "list", "model", "name", "text",
                            "mapButton", "clearButton" }) do
       assert(type(t[key]) == "table" and t[key].x and t[key].y, name .. " lacks " .. key)
     end
@@ -244,6 +248,12 @@ table.insert(ns.tests, { "names: saved names are reused only for the same langua
   assert(next(ns.NameCache(saved, "ptBR", "71000")) == nil)   -- other build
   assert(next(ns.NameCache(nil, "ptBR", "70959")) == nil)
   assert(next(ns.NameCache({ locale = "ptBR", build = "70959", names = "x" }, "ptBR", "70959")) == nil)
+end })
+
+table.insert(ns.tests, { "filters: defaults show everything and are a fresh table each time", function()
+  local a, b = ns.DefaultFilters(), ns.DefaultFilters()
+  assert(a ~= b and a.showUntameable == true and a.onlyLocated == false and a.search == "")
+  assert(a.family == nil and a.zone == nil and a.bucket == nil)
 end })
 
 table.insert(ns.tests, { "locale: unknown key falls back to the key", function()

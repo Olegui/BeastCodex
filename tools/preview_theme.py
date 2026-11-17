@@ -32,7 +32,7 @@ def main():
         d.rectangle((x, y, x + w, y + h), outline=color, width=3)
         d.text((x + 4, y + 2), label, fill=color)
 
-    for key in ("search", "close", "check", "count", "list", "model", "name", "text", "mapButton", "clearButton"):
+    for key in ("search", "searchClear", "close", "check", "check2", "resetButton", "themeButton", "credits", "count", "list", "model", "name", "text", "mapButton", "clearButton"):
         box(t[key], (255, 80, 80, 255), key)
     for i in range(1, 4):
         f = t.filters[i]

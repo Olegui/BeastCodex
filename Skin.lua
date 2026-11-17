@@ -23,6 +23,7 @@ ns.Themes.classic = {
   },
   check = { x = 48, y = 226, w = 16, h = 16, labelW = 136 },
   check2 = { x = 48, y = 250, w = 16, h = 16, labelW = 136 },
+  resetButton = { x = 48, y = 280, w = 160, h = 22 },
   themeButton = { x = 430, y = 25, w = 160, h = 24 },
   count = { x = 48, y = 496, w = 160 },
   credits = { x = 48, y = 534, w = 800 },
@@ -115,6 +116,8 @@ local function panels(look)
     },
     check = { x = 166, y = 578, w = 34, h = 34, labelW = 262 },
     check2 = { x = 166, y = 628, w = 34, h = 34, labelW = 262 },
+    -- Same look as the search field, like the "clear pins" button.
+    resetButton = { x = 164, y = 690, w = 310, h = 50, face = "outline", textColor = a },
     count = look.count or { x = 166, y = 1084, w = 310 },
     list = { x = 552, y = 226, w = 820, h = 892 },
     model = { x = 1458, y = 250, w = 380, h = 354 },
@@ -147,7 +150,7 @@ ns.Themes.selva = panels({
 -- brass lines, feathers, arrows and antlers around the edges.
 ns.Themes.hunter = panels({
   art = "Hunter", label = "Hunter", accent = { 0.86, 0.69, 0.38 },
-  count = { x = 166, y = 690, w = 310 }, -- the bottom-left corner is covered by a fang and oak leaves
+  count = { x = 166, y = 758, w = 310 }, -- the bottom-left corner is covered by a fang and oak leaves
   onAccent = { 0.16, 0.10, 0.03 },
   text = { 0.94, 0.88, 0.77 }, dim = { 0.74, 0.64, 0.54 },
   tagHex = "d9ad5c", tagText = { 1, 0.93, 0.80 },
