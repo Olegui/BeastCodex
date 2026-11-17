@@ -64,7 +64,11 @@ function UI.Button(parent, r, text, showLabel)
   -- `face` names the atlas piece that is the button's own look; `offFace` the
   -- piece laid over it while it is unavailable.
   local face = UI.Atlas(b, "BACKGROUND", r.face)
-  if face then face:SetAllPoints() end
+  if face then
+    local pad = r.facePad or 0 -- window units; faces cut with their rim reach past the button
+    face:SetPoint("TOPLEFT", -pad, pad)
+    face:SetPoint("BOTTOMRIGHT", pad, -pad)
+  end
   b.off = UI.Atlas(b, "BORDER", r.offFace) or false
   if b.off then
     local pad = ns.Skin.rowArt.offPad or 0

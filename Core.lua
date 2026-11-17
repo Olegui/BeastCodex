@@ -205,7 +205,7 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
         assert(p[1] >= 0 and p[2] >= 0 and p[1] + p[3] <= t.rowArt.texW and p[2] + p[4] <= t.rowArt.texH,
           name .. " atlas piece out of bounds: " .. piece)
       end
-      for _, key in ipairs({ "themeButton", "mapButton", "clearButton" }) do
+      for _, key in ipairs({ "themeButton", "mapButton", "clearButton", "resetButton" }) do
         for _, field in ipairs({ "face", "offFace" }) do
           local piece = t[key][field]
           assert(piece == nil or t.rowArt.faces[piece], name .. "." .. key .. " names a missing atlas piece")

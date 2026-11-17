@@ -14,13 +14,14 @@ search field and buttons painted there. Positions must match rowArt in Skin.lua.
 """
 import os
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX_W, TEX_H, SLOT_H = 1024, 512, 64
 ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
 GREY_PILL_X, SPAWN_PILL_X = 920, 560
+RED_X = 672                                       # red main button, in the controls band
 BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's slot
 OFF_PAD, OFF_W = 6, 338                          # the unavailable face is cut 6 units larger all round
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
@@ -108,6 +109,19 @@ def cut_shape(art, box, pad, size):
     return piece.resize(size, Image.LANCZOS)
 
 
+def recolor(piece, dark, mid, light):
+    """Same surface and wear, in another color: brightness mapped onto dark-mid-light."""
+    alpha = piece.getchannel("A")
+    lum = piece.convert("L")
+    # Bring the average brightness to the middle first, so a light button
+    # (Selva's flat amber) comes out as deep a red as a darker one.
+    mean = sum(lum.get_flattened_data()) / (lum.width * lum.height)
+    lum = lum.point(lambda v: max(0, min(255, int(v * 118 / mean))))
+    out = ImageOps.colorize(lum, black=dark, mid=mid, white=light).convert("RGBA")
+    out.putalpha(alpha)
+    return out
+
+
 def desaturate(piece, amount=0.88, level=105):
     """Same surface and wear, most of the color taken out.
 
@@ -149,7 +163,10 @@ def build(name):
 
     inside = ((SEARCH[0] + SEARCH[2]) // 2, (SEARCH[1] + SEARCH[3]) // 2)  # plain interior of the search field
     # The map button while a creature has no location: the painted button itself, drained of color.
-    atlas.alpha_composite(desaturate(cut_shape(art, MAP_BUTTON, OFF_PAD, (OFF_W, BTN_H))), (OFF_X, 3 * SLOT_H))
+    main = cut_shape(art, MAP_BUTTON, OFF_PAD, (OFF_W, BTN_H))
+    atlas.alpha_composite(desaturate(main), (OFF_X, 3 * SLOT_H))
+    # Red version of the main button, for "clear filters".
+    atlas.alpha_composite(recolor(main, (24, 4, 3), (150, 34, 26), (246, 168, 148)), (RED_X, CONTROLS_Y))
     # "Clear pins": the search field's look, without its magnifier.
     atlas.alpha_composite(cut(art, SEARCH, (BTN_W, BTN_H), MAGNIFIER, inside), (FACE_X, 3 * SLOT_H))
 
