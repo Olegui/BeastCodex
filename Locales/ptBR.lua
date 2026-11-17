@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Mostrar no mapa"
 L.CLEAR_PINS = "Limpar marcadores"
 L.LOCATION_UNAVAILABLE = "Localização indisponível"
 L.THEME = "Tema"
+L.CREDITS = "Desenvolvido por %s"
 L.ONLY_LOCATED = "Só com localização no mapa"
 
 L.FAMILY_bat = "Morcego"

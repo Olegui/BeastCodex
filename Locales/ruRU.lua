@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Показать на карте"
 L.CLEAR_PINS = "Убрать метки"
 L.LOCATION_UNAVAILABLE = "Местоположение недоступно"
 L.THEME = "Тема"
+L.CREDITS = "Разработчик: %s"
 L.ONLY_LOCATED = "Только с меткой на карте"
 
 L.FAMILY_bat = "Летучая мышь"

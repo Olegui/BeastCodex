@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "在地圖上顯示"
 L.CLEAR_PINS = "清除標記"
 L.LOCATION_UNAVAILABLE = "位置不可用"
 L.THEME = "主題"
+L.CREDITS = "開發者：%s"
 L.ONLY_LOCATED = "僅顯示有地圖位置的"
 
 L.FAMILY_bat = "蝙蝠"

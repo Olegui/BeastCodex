@@ -4,6 +4,8 @@ local L = ns.L
 local Window = {}
 ns.Window = Window
 
+local AUTHOR, SITE = "Oleg", "assantech.com.br"
+
 -- Small widget helpers shared by the window and the detail panel. They are
 -- plain frames (no Blizzard templates), so UI-skinning addons leave them
 -- alone and a theme's art can show through.
@@ -453,6 +455,12 @@ function Window:Create()
   end)
 
   self.count = S.count and UI.Text(f, S.count, "GameFontDisableSmall", c.dim) or nil
+
+  -- Footer credits, as in EAD Skill Preview: author, then the site in the accent color.
+  if S.credits then
+    UI.Text(f, S.credits, "GameFontDisableSmall", c.dim, "CENTER")
+      :SetText(L.CREDITS:format(AUTHOR) .. "  •  |cff" .. c.tag .. SITE .. "|r")
+  end
 
   ns.List:Create(f, S.list)
   ns.Detail:Create(f)

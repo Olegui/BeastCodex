@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Auf Karte zeigen"
 L.CLEAR_PINS = "Markierungen entfernen"
 L.LOCATION_UNAVAILABLE = "Fundort nicht verfügbar"
 L.THEME = "Design"
+L.CREDITS = "Entwickelt von %s"
 L.ONLY_LOCATED = "Nur mit Kartenposition"
 
 L.FAMILY_bat = "Fledermaus"

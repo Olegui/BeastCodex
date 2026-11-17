@@ -24,6 +24,7 @@ ns.Themes.classic = {
   check2 = { x = 48, y = 250, w = 16, h = 16, labelW = 136 },
   themeButton = { x = 430, y = 25, w = 160, h = 24 },
   count = { x = 48, y = 496, w = 160 },
+  credits = { x = 48, y = 534, w = 800 },
   list = { x = 220, y = 72, w = 386, h = 440 },
   rowH = 20,
   model = { x = 618, y = 72, w = 230, h = 170 },
@@ -95,6 +96,7 @@ local function panels(look)
       },
     },
     label = look.label,
+    credits = { x = 500, y = 1143, w = 1000 }, -- on the frame below the panels, clear of the corner decorations
     -- Same height and look as the search field it sits beside.
     themeButton = { x = 1030, y = 108, w = 368, h = 57, face = "field", padRight = 24 },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },

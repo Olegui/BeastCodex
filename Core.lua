@@ -130,7 +130,7 @@ end })
 
 table.insert(ns.tests, { "theme: every theme defines every rectangle the window needs", function()
   for name, t in pairs(ns.Themes) do
-    for _, key in ipairs({ "search", "close", "check", "check2", "themeButton", "list", "model", "name", "text",
+    for _, key in ipairs({ "search", "close", "check", "check2", "themeButton", "credits", "list", "model", "name", "text",
                            "mapButton", "clearButton" }) do
       assert(type(t[key]) == "table" and t[key].x and t[key].y, name .. " lacks " .. key)
     end

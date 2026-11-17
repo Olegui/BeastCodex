@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "지도에 표시"
 L.CLEAR_PINS = "표시 지우기"
 L.LOCATION_UNAVAILABLE = "위치 정보 없음"
 L.THEME = "테마"
+L.CREDITS = "개발: %s"
 L.ONLY_LOCATED = "지도 위치가 있는 야수만"
 
 L.FAMILY_bat = "박쥐"

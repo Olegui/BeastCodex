@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Mostrar en el mapa"
 L.CLEAR_PINS = "Quitar marcadores"
 L.LOCATION_UNAVAILABLE = "Ubicación no disponible"
 L.THEME = "Tema"
+L.CREDITS = "Desarrollado por %s"
 L.ONLY_LOCATED = "Solo con ubicación en el mapa"
 
 L.FAMILY_bat = "Murciélago"

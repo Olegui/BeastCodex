@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Beast Codex
 ## Notes: A hunter's codex of every tameable beast: filters, 3D preview and map pins.
-## Author: Olegui
+## Author: Oleg (assantech.com.br)
 ## Version: 0.1.0
 ## SavedVariables: BeastCodexDB
 ## IconTexture: Interface\Icons\Ability_Hunter_BeastTaming

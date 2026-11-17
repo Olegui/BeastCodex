@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Mostra sulla mappa"
 L.CLEAR_PINS = "Rimuovi segnalini"
 L.LOCATION_UNAVAILABLE = "Posizione non disponibile"
 L.THEME = "Tema"
+L.CREDITS = "Sviluppato da %s"
 L.ONLY_LOCATED = "Solo con posizione sulla mappa"
 
 L.FAMILY_bat = "Pipistrello"
