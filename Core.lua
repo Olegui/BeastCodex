@@ -14,6 +14,9 @@ function ns.SanitizeDB(db, creatures)
   if type(db) ~= "table" then return out end
   if type(db.minimap) == "table" then out.minimap = db.minimap end
   if type(db.theme) == "string" and ns.Themes[db.theme] then out.theme = db.theme end
+  -- Diagnostic results are kept so they survive any number of reloads until read.
+  if type(db.selftest) == "table" then out.selftest = db.selftest end
+  if type(db.modelscan) == "table" then out.modelscan = db.modelscan end
 
   local f = type(db.filters) == "table" and db.filters or {}
   local families, zones = {}, {}
@@ -144,6 +147,12 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
       assert(t.rowArt.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " row art path")
     end
   end
+end })
+
+table.insert(ns.tests, { "db: diagnostic results survive a reload", function()
+  local db = ns.SanitizeDB({ modelscan = { total = 3 }, selftest = { passed = 1 }, junk = { 1 } }, sample)
+  assert(db.modelscan.total == 3 and db.selftest.passed == 1 and db.junk == nil)
+  assert(ns.SanitizeDB({ modelscan = "x" }, sample).modelscan == nil)
 end })
 
 table.insert(ns.tests, { "locale: unknown key falls back to the key", function()
