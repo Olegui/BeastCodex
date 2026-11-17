@@ -15,7 +15,7 @@ A hunter's codex for **World of Warcraft: Forever**. Every beast you can tame, a
 - **Filters:** family, zone, level range (1-10, 11-20, …), show untameable, only beasts with a map location, and a search box that matches names in your language and in English. One click clears them all.
 - **3D preview:** hover a beast to see its model turn; click to pin it.
 - **Map pins:** "Show on map" opens the world map on the beast's zone with a pin on every spawn point.
-- **Themes:** Hunter (default), Selva and Classic, switched live from the window.
+- **Themes:** Hunter (default), Selva and Classic, switched from the selector next to the search box.
 - **11 languages:** follows your game language. Beast, zone and ability names come from the game itself.
 
 ### Installation
@@ -37,7 +37,7 @@ A hunter's codex for **World of Warcraft: Forever**. Every beast you can tame, a
 | Pin a beast | Click its row |
 | Show its spawn points | **Show on map** |
 | Remove the pins | **Clear pins** |
-| Change theme | The **Theme** selector next to the search box, or `/beastcodex theme <name>` |
+| Change theme | The **Theme** selector next to the search box |
 
 ### Credits
 
@@ -60,7 +60,7 @@ Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que v
 - **Filtros:** família, zona, faixa de nível (1-10, 11-20, …), mostrar indomáveis, só com localização no mapa, e uma busca que encontra o nome no seu idioma e em inglês. Um clique limpa todos.
 - **Prévia 3D:** passe o cursor numa fera para ver o modelo girando; clique para fixá-la.
 - **Pins no mapa:** "Mostrar no mapa" abre o mapa do mundo na zona da fera, com um pin em cada ponto de aparição.
-- **Temas:** Hunter (padrão), Selva e Classic, trocados na hora pela janela.
+- **Temas:** Hunter (padrão), Selva e Classic, trocados pelo seletor ao lado da busca.
 - **11 idiomas:** segue o idioma do jogo. Nomes de feras, zonas e habilidades vêm do próprio jogo.
 
 ### Instalação
@@ -82,7 +82,7 @@ Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que v
 | Fixar uma fera | Clique na linha |
 | Ver os pontos de aparição | **Mostrar no mapa** |
 | Tirar os pins | **Limpar marcadores** |
-| Trocar o tema | O seletor **Tema**, ao lado da busca, ou `/beastcodex theme <nome>` |
+| Trocar o tema | O seletor **Tema**, ao lado da busca |
 
 ### Créditos
 
