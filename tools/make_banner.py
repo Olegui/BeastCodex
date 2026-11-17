@@ -3,7 +3,7 @@
 Layout follows the EAD - Skill Preview banner: framed dark panel, title,
 subtitle, short bullet list, footer on the left; two in-game window crops on
 the right. Usage: make_banner.py <front.png> <back.png>
-(each shot already cropped to the addon window).
+(window cut-outs with transparent background, from tools/cutout_window.py).
 """
 import sys
 from pathlib import Path
@@ -64,11 +64,15 @@ def gradient(w, h, top, bot):
 
 
 def paste_shadow(base, tile, x, y):
-    sh = Image.new("RGBA", (tile.width + 60, tile.height + 60), (0, 0, 0, 0))
-    ImageDraw.Draw(sh).rectangle([30, 36, 30 + tile.width, 36 + tile.height], fill=(0, 0, 0, 170))
+    """Pastes an RGBA window cut-out with a soft shadow that follows its outline."""
+    pad = 40
+    alpha = tile.getchannel("A").point(lambda v: v * 170 // 255)
+    sh = Image.new("RGBA", (tile.width + 2 * pad, tile.height + 2 * pad), (0, 0, 0, 0))
+    black = Image.new("RGBA", tile.size, (0, 0, 0, 255))
+    sh.paste(black, (pad + 6, pad + 12), alpha)
     sh = sh.filter(ImageFilter.GaussianBlur(14))
-    base.paste(sh, (x - 30, y - 30), sh)
-    base.paste(tile, (x, y))
+    base.alpha_composite(sh, (x - pad, y - pad))
+    base.alpha_composite(tile, (x, y))
 
 
 def build(lang, shots, out):
@@ -83,11 +87,8 @@ def build(lang, shots, out):
     tw = 1010
     tiles = []
     for p in shots:
-        im = Image.open(p).convert("RGB")
-        im = im.resize((tw, round(im.height * tw / im.width)), Image.LANCZOS)
-        rim = Image.new("RGB", (im.width + 4, im.height + 4), GOLD_DIM)
-        rim.paste(im, (2, 2))
-        tiles.append(rim)
+        im = Image.open(p).convert("RGBA")
+        tiles.append(im.resize((tw, round(im.height * tw / im.width)), Image.LANCZOS))
     back, front = tiles[1], tiles[0]
     paste_shadow(img, back, W - 60 - tw - 150, 60)
     paste_shadow(img, front, W - 60 - tw, H - 60 - front.height)
