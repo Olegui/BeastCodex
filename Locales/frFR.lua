@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Afficher sur la carte"
 L.CLEAR_PINS = "Effacer les repères"
 L.LOCATION_UNAVAILABLE = "Emplacement indisponible"
 L.THEME = "Thème"
+L.SELECT_BEAST = "Sélectionnez une bête"
 L.CREDITS = "Développé par %s"
 L.ONLY_LOCATED = "Seulement avec position sur la carte"
 

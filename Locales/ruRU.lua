@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "Показать на карте"
 L.CLEAR_PINS = "Убрать метки"
 L.LOCATION_UNAVAILABLE = "Местоположение недоступно"
 L.THEME = "Тема"
+L.SELECT_BEAST = "Выберите зверя"
 L.CREDITS = "Разработчик: %s"
 L.ONLY_LOCATED = "Только с меткой на карте"
 

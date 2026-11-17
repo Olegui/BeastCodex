@@ -99,7 +99,7 @@ function Detail:Show(c)
     pcall(self.model.ClearModel, self.model)
     self.name:SetText("")
     self.text:SetText(L.HOVER_HINT)
-    self.mapButton:SetActive(false)
+    self.mapButton:SetActive(false, L.SELECT_BEAST) -- nothing to show on the map yet
     return
   end
   showModel(self.model, c)

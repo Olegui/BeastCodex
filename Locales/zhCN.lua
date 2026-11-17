@@ -31,6 +31,7 @@ L.SHOW_ON_MAP = "在地图上显示"
 L.CLEAR_PINS = "清除标记"
 L.LOCATION_UNAVAILABLE = "位置不可用"
 L.THEME = "主题"
+L.SELECT_BEAST = "选择一只野兽"
 L.CREDITS = "开发者：%s"
 L.ONLY_LOCATED = "仅显示有地图位置的"
 

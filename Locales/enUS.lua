@@ -26,6 +26,7 @@ ns.L = setmetatable({
   CLEAR_PINS = "Clear pins",
   LOCATION_UNAVAILABLE = "Location unavailable",
   THEME = "Theme",
+  SELECT_BEAST = "Select a beast",
   CREDITS = "Developed by %s",
   ONLY_LOCATED = "Only with map location",
 
