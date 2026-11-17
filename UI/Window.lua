@@ -16,6 +16,13 @@ function UI.Place(frame, parent, r)
   if r.w then frame:SetSize(r.w, r.h or 20) end
 end
 
+-- Dark text on a light page: the client fonts' dark drop shadow reads as blur
+-- there, so themes with `noShadow` drop it.
+function UI.Flat(fontString)
+  if ns.Skin.noShadow then fontString:SetShadowOffset(0, 0) end
+  return fontString
+end
+
 function UI.Text(parent, r, font, color, justify)
   local fs = parent:CreateFontString(nil, "ARTWORK", font or "GameFontHighlightSmall")
   fs:SetPoint("TOPLEFT", parent, "TOPLEFT", r.x, -r.y)
@@ -23,7 +30,7 @@ function UI.Text(parent, r, font, color, justify)
   fs:SetJustifyH(justify or "LEFT")
   fs:SetJustifyV("TOP")
   if color then fs:SetTextColor(color[1], color[2], color[3]) end
-  return fs
+  return UI.Flat(fs)
 end
 
 -- A clickable area. With `showLabel` it carries centered text; without it the
@@ -47,7 +54,7 @@ function UI.Button(parent, r, text, showLabel)
     b.label:SetWordWrap(false)
     -- The client fonts carry a dark drop shadow; under dark text on a light
     -- button it reads as blur, so such labels go without it.
-    if r.textColor then b.label:SetShadowOffset(0, 0) end
+    if r.textColor or ns.Skin.noShadow then b.label:SetShadowOffset(0, 0) end
     local tc = r.textColor or c.text
     b.label:SetTextColor(tc[1], tc[2], tc[3])
     b.label:SetText(text)
@@ -126,6 +133,7 @@ local function buildMenu(parent)
     row.text:SetPoint("RIGHT", -4, 0)
     row.text:SetJustifyH("LEFT")
     row.text:SetWordWrap(false)
+    UI.Flat(row.text)
     row:SetScript("OnClick", function(self)
       m:Hide()
       m.onPick(self.value)
@@ -242,7 +250,8 @@ local function newCheck(parent, r, text, checked, onChange)
   end
   local mark = b:CreateTexture(nil, "ARTWORK")
   mark:SetPoint("CENTER")
-  mark:SetSize(r.w * 1.5, r.h * 1.5)
+  local ms = r.markScale or 1.5 -- a small box gets an oversized tick, a big plate a smaller one
+  mark:SetSize(r.w * ms, r.h * ms)
   mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
   mark:SetShown(checked)
   if r.labelW then
@@ -252,6 +261,7 @@ local function newCheck(parent, r, text, checked, onChange)
     label:SetJustifyH("LEFT")
     label:SetTextColor(c.text[1], c.text[2], c.text[3])
     label:SetText(text)
+    UI.Flat(label)
   else
     b:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -335,7 +345,7 @@ function Window:Create()
   end
 
   if S.title then
-    UI.Text(f, S.title, "GameFontNormalLarge", c.title):SetText(L.TITLE)
+    UI.Text(f, S.title, "GameFontNormalLarge", c.title, S.title.center and "CENTER" or "LEFT"):SetText(L.TITLE)
   end
 
   local close = UI.Button(f, S.close, CLOSE or "Close", S.close.text ~= nil)
@@ -345,7 +355,8 @@ function Window:Create()
   local search = CreateFrame("EditBox", nil, f)
   UI.Place(search, f, S.search)
   search:SetFontObject("GameFontHighlightSmall")
-  search:SetTextColor(c.text[1], c.text[2], c.text[3])
+  local sc = S.search.textColor or c.text
+  search:SetTextColor(sc[1], sc[2], sc[3])
   search:SetTextInsets(6, 6, 0, 0)
   search:SetAutoFocus(false)
   if c.control then

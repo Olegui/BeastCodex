@@ -182,6 +182,8 @@ local function newRow(parent, width, height)
     row.tag:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
   end
 
+  for _, fs in ipairs({ row.zone, row.level, row.name, row.tag }) do ns.UI.Flat(fs) end
+
   row:SetScript("OnEnter", function(self)
     if self.data and self.data.creature and List.onEnter then List.onEnter(self.data.creature) end
   end)
@@ -222,6 +224,7 @@ function List:Create(parent, r)
   self.empty:SetText(L.NO_RESULTS)
   local dim = S.colors.dim
   self.empty:SetTextColor(dim[1], dim[2], dim[3])
+  ns.UI.Flat(self.empty)
 
   local bar = CreateFrame("Slider", nil, holder)
   bar:SetOrientation("VERTICAL")

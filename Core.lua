@@ -67,6 +67,8 @@ SlashCmdList.BEASTCODEX = function(msg)
   local theme = msg:match("^%s*theme%s*(%S*)")
   if msg:match("^%s*selftest") then
     if ns.RunSelfTest then ns.RunSelfTest() end
+  elseif msg:match("^%s*modelscan") then
+    if ns.RunModelScan then ns.RunModelScan() end
   elseif theme then
     -- The window is built once per session, so a theme change reloads the UI.
     if ns.Themes[theme] then
@@ -133,7 +135,14 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
       assert(type(t.colors[key]) == "table", name .. " lacks color " .. key)
     end
     assert(type(t.colors.tag) == "string" and #t.colors.tag == 6, name .. " tag color")
-    if t.texture then assert(t.imgW and t.imgH and t.texW and t.texH, name .. " texture size") end
+    if t.texture then
+      assert(t.imgW and t.imgH and t.texW and t.texH, name .. " texture size")
+      -- A path with single backslashes loses them silently and the art never loads.
+      assert(t.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " texture path: " .. t.texture)
+    end
+    if t.rowArt then
+      assert(t.rowArt.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " row art path")
+    end
   end
 end })
 
