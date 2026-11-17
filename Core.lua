@@ -109,7 +109,7 @@ frame:SetScript("OnEvent", function(self, _, name)
   if ldb and icon then
     local obj = ldb:NewDataObject("BeastCodex", {
       type = "launcher",
-      icon = "Interface\\Icons\\Ability_Hunter_BeastTaming",
+      icon = "Interface\\AddOns\\BeastCodex\\Art\\Icon",
       OnClick = toggle,
       OnTooltipShow = function(tip)
         tip:AddLine(L.TITLE)

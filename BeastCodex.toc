@@ -4,7 +4,7 @@
 ## Author: Oleg (assantech.com.br)
 ## Version: 0.1.0
 ## SavedVariables: BeastCodexDB
-## IconTexture: Interface\Icons\Ability_Hunter_BeastTaming
+## IconTexture: Interface\AddOns\BeastCodex\Art\Icon
 
 Libs\LibStub.lua
 Libs\CallbackHandler-1.0.lua
