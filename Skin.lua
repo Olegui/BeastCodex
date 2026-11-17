@@ -80,9 +80,9 @@ ns.Themes.selva = ns.ArtTheme({
   search = { x = 1436, y = 119, w = 300, h = 38 },
   close = { x = 1832, y = 111, w = 50, h = 50 },
   filters = {
-    { x = 164, y = 266, w = 270, h = 53, label = { x = 164, y = 234 } },
-    { x = 164, y = 376, w = 270, h = 53, label = { x = 164, y = 344 } },
-    { x = 164, y = 487, w = 270, h = 53, label = { x = 164, y = 455 } },
+    { x = 164, y = 266, w = 310, h = 53, padRight = 22, label = { x = 164, y = 234 } },
+    { x = 164, y = 376, w = 310, h = 53, padRight = 22, label = { x = 164, y = 344 } },
+    { x = 164, y = 487, w = 310, h = 53, padRight = 22, label = { x = 164, y = 455 } },
   },
   check = { x = 166, y = 580, w = 30, h = 30, labelW = 250 },
   count = { x = 166, y = 1084, w = 310 },

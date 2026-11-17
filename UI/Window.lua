@@ -43,7 +43,7 @@ function UI.Button(parent, r, text, showLabel)
   if showLabel then
     b.label = b:CreateFontString(nil, "ARTWORK", r.font or "GameFontHighlightSmall")
     b.label:SetPoint("LEFT", 6, 0)
-    b.label:SetPoint("RIGHT", -6, 0)
+    b.label:SetPoint("RIGHT", -(r.padRight or 6), 0)
     b.label:SetWordWrap(false)
     -- The client fonts carry a dark drop shadow; under dark text on a light
     -- button it reads as blur, so such labels go without it.
