@@ -93,6 +93,13 @@ Estas são decisões minhas. O dono pode trocar qualquer uma.
 - O script guarda as páginas baixadas em cache local (fora do Git), espera
   entre requisições, e só roda quando o dono pedir. O addon nunca acessa a
   internet.
+- A coleta do Wowhead é o maior risco dos dados (milhares de páginas, e o
+  site pode barrar scripts). Por isso ela começa com um teste pequeno, de
+  umas dez criaturas, antes de escrever o resto. O addon anterior do dono
+  já gerou dados do Wowhead Forever, então há precedente. Se o script
+  simples for barrado, a alternativa é coletar por um navegador de verdade.
+  Se nem isso funcionar, o botão do mapa passa a abrir só a zona, sem pins,
+  e isso volta para o dono decidir.
 - Saída: arquivos Lua em `Data/`, gerados, não editados à mão.
 - Autoverificação do script: a contagem de criaturas domáveis por aparência
   tem que bater com o "There are N tameable creatures with this look" do
@@ -121,6 +128,26 @@ Estas são decisões minhas. O dono pode trocar qualquer uma.
 - Dados salvos (`BeastCodexDB`): posição do botão do minimapa e últimos
   filtros. Nada mais.
 
+- Agrupamento por aparência: linhas de cabeçalho fixas (não recolhem) com o
+  nome da aparência, e as criaturas embaixo. Filtros e busca contam
+  criaturas; cabeçalho sem criatura visível some.
+- Passar o cursor numa linha mostra a prévia (modelo e detalhes) no painel
+  da direita. Clicar fixa a criatura no painel, e é nela que o botão
+  "Mostrar no mapa" age. Ao tirar o cursor, o painel volta para a fixada.
+
+### Testes no jogo
+
+- Só o dono roda o jogo. O construtor não controla o cliente.
+- O construtor lê os resultados do disco depois de um `/reload`: os dados
+  salvos do addon e os do BugSack em `WTF\Account\<conta>\SavedVariables`,
+  e os prints feitos pelo script PowerShell.
+- Primeiro passo no jogo: um addon de sondagem descartável que testa de uma
+  vez os três pontos incertos (modelo 3D por ID da criatura, casar zona com
+  mapa pelo nome, desenhar pins no mapa do mundo) e grava o resultado nos
+  dados salvos. O resto do plano depende do que a sondagem mostrar.
+- Depois disso, cada etapa termina com um ponto de conferência do dono no
+  jogo.
+
 ### Idiomas
 
 - `Locales/` com um arquivo por idioma: enUS, deDE, esES, esMX, frFR, itIT,
@@ -142,12 +169,18 @@ Estas são decisões minhas. O dono pode trocar qualquer uma.
 - Enquanto a arte não chega, o addon usa uma moldura provisória simples. A
   disposição já respeita as medidas da arte final, para a troca ser só de
   textura.
+- Quem julga a arte é o dono. A etapa de arte termina quando ele aprova um
+  print da janela dentro do jogo. Não há limite fixo de rodadas de geração.
+- Se o gerador não conseguir respeitar as áreas livres numa imagem única, a
+  moldura passa a ser montada em peças (cantos, bordas, fundo). A
+  disposição do conteúdo não muda.
 - Ordem: dados, depois addon funcionando, depois arte. A versão 1 só é
   publicada com a arte.
 
 ### Publicação e créditos
 
-- Repositório GitHub privado até a publicação.
+- Repositório GitHub privado até a publicação: `Olegui/BeastCodex`, já
+  criado. O projeto no CurseForge ainda não existe, e é o dono quem cria.
 - README e descrição do CurseForge dão crédito ao Petopia e ao Wowhead.
 
 ## Questões em aberto para o dono
