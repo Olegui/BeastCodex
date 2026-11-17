@@ -54,6 +54,11 @@ SMOKE = """function(ns)
             ns.Detail:Preview(nil)
             ns.preloadStarted = nil
             ns.Preload()
+            for other in pairs(ns.Themes) do          -- live theme switch rebuilds the window
+                assert(ns.Window:SetTheme(other) == true)
+                assert(ns.themeName == other and ns.db.theme == other)
+            end
+            assert(ns.Window:SetTheme("no-such-theme") == false)
             local picked
             local items = { { nil, "All" } }
             for i = 1, 30 do items[#items + 1] = { i, "Item " .. i } end

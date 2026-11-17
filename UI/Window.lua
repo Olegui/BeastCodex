@@ -39,10 +39,28 @@ function UI.Button(parent, r, text, showLabel)
   local c = ns.Skin.colors
   local b = CreateFrame("Button", nil, parent)
   UI.Place(b, parent, r)
-  if c.control and showLabel then
+  local fill = r.fill or (showLabel and not r.face and c.control)
+  if fill then
     local bg = b:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints()
-    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+    bg:SetColorTexture(fill[1], fill[2], fill[3], fill[4])
+  end
+  -- Button faces drawn by the addon come from the theme's atlas (tools/make_rows.py):
+  -- `face` is the button's own look, `offFace` covers it while it is unavailable.
+  local art = ns.Skin.rowArt
+  local function face(x, layer)
+    local t = b:CreateTexture(nil, layer)
+    t:SetAllPoints()
+    t:SetTexture(art.texture)
+    t:SetTexCoord(x / art.texW, (x + art.btnW) / art.texW,
+      3 * art.slotH / art.texH, (3 * art.slotH + art.btnH) / art.texH)
+    return t
+  end
+  if art and r.face then face(art.faceX, "BACKGROUND") end
+  b.off = false
+  if art and r.offFace then
+    b.off = face(art.offX, "BORDER")
+    b.off:Hide()
   end
   local hl = b:CreateTexture(nil, "HIGHLIGHT")
   hl:SetAllPoints()
@@ -70,11 +88,14 @@ function UI.Button(parent, r, text, showLabel)
   b.tooltip = text
   -- An inactive button keeps full opacity (fading text looks smeared) and
   -- changes to a muted color instead.
-  function b:SetActive(on)
+  -- `offText` replaces the label while inactive (e.g. why it is unavailable).
+  function b:SetActive(on, offText)
     self:EnableMouse(on)
+    if self.off then self.off:SetShown(not on) end
     if self.label then
       local tc = on and (r.textColor or c.text) or (r.dimColor or c.dim)
       self.label:SetTextColor(tc[1], tc[2], tc[3])
+      self.label:SetText(on and text or offText or text)
     end
   end
   return b
@@ -315,7 +336,10 @@ end
 function Window:Create()
   local S = ns.Skin
   local c = S.colors
-  local f = CreateFrame("Frame", "BeastCodexFrame", UIParent,
+  -- The window is rebuilt when the theme changes, so each build gets its own name.
+  Window.serial = (Window.serial or 0) + 1
+  local frameName = "BeastCodexFrame" .. Window.serial
+  local f = CreateFrame("Frame", frameName, UIParent,
     S.backdrop and BackdropTemplateMixin and "BackdropTemplate" or nil)
   f:SetSize(S.W, S.H)
   f:SetPoint("CENTER")
@@ -326,7 +350,10 @@ function Window:Create()
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", f.StartMoving)
   f:SetScript("OnDragStop", f.StopMovingOrSizing)
-  tinsert(UISpecialFrames, "BeastCodexFrame") -- Esc closes it
+  for i = #UISpecialFrames, 1, -1 do -- Esc closes the current build only
+    if tostring(UISpecialFrames[i]):find("^BeastCodexFrame") then table.remove(UISpecialFrames, i) end
+  end
+  tinsert(UISpecialFrames, frameName)
   f:Hide()
 
   if S.texture then
@@ -378,6 +405,19 @@ function Window:Create()
     label:SetText(L.SEARCH)
   end
 
+  if S.themeButton then
+    local current = ns.Themes[ns.themeName]
+    local themeButton = UI.Button(f, S.themeButton, L.THEME .. ": " .. (current.label or ns.themeName), true)
+    themeButton:SetScript("OnClick", function(self)
+      local items = {}
+      for name, theme in pairs(ns.Themes) do items[#items + 1] = { name, theme.label or name } end
+      table.sort(items, function(a, b) return a[2] < b[2] end)
+      UI.OpenMenu(self, items,
+        function(name) return name == ns.themeName end,
+        function(name) Window:SetTheme(name) end)
+    end)
+  end
+
   local onChange = function() Window:Refresh() end
   local specs = {
     { L.FILTER_FAMILY, "family", familyOptions },
@@ -392,6 +432,10 @@ function Window:Create()
     ns.db.filters.showUntameable = on
     Window:Refresh()
   end)
+  newCheck(f, S.check2, L.ONLY_LOCATED, ns.db.filters.onlyLocated, function(on)
+    ns.db.filters.onlyLocated = on
+    Window:Refresh()
+  end)
 
   self.count = S.count and UI.Text(f, S.count, "GameFontDisableSmall", c.dim) or nil
 
@@ -399,6 +443,31 @@ function Window:Create()
   ns.Detail:Create(f)
 
   self.frame = f
+end
+
+-- Switches theme in place: the window is rebuilt from the new theme, keeping
+-- its position, whether it was open, and the pinned creature.
+function Window:SetTheme(name)
+  if not ns.Themes[name] then return false end
+  ns.db.theme = ns.ApplyTheme(name)
+  local old = self.frame
+  if not old then return true end
+  local shown = old:IsShown()
+  local point, _, relPoint, x, y = old:GetPoint(1)
+  local pinned = ns.Detail.pinned
+  old:Hide()
+  self.frame = nil
+  self:Create()
+  if point then
+    self.frame:ClearAllPoints()
+    self.frame:SetPoint(point, UIParent, relPoint, x, y)
+  end
+  if shown then
+    self:Refresh()
+    self.frame:Show()
+    if pinned then ns.Detail:Pin(pinned) end
+  end
+  return true
 end
 
 function Window:Toggle()

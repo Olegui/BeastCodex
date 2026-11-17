@@ -24,7 +24,9 @@ ns.L = setmetatable({
   DIET_FMT = "Diet: %s",
   SHOW_ON_MAP = "Show on map",
   CLEAR_PINS = "Clear pins",
-  LOCATION_UNKNOWN = "Location unknown",
+  LOCATION_UNAVAILABLE = "Location unavailable",
+  THEME = "Theme",
+  ONLY_LOCATED = "Only with map location",
 
   FAMILY_bat = "Bat", FAMILY_bear = "Bear", FAMILY_birdofprey = "Bird of Prey",
   FAMILY_boar = "Boar", FAMILY_carrionbird = "Carrion Bird", FAMILY_cat = "Cat",

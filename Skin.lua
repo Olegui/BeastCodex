@@ -9,6 +9,7 @@ ns.Themes = {}
 
 -- Plain dark frame drawn with client textures. Needs no art file.
 ns.Themes.classic = {
+  label = "Classic",
   W = 896, H = 560,
   backdrop = true,
   title = { x = 48, y = 28 },
@@ -20,6 +21,8 @@ ns.Themes.classic = {
     { x = 48, y = 188, w = 160, h = 24, label = { x = 48, y = 172 } },
   },
   check = { x = 48, y = 226, w = 16, h = 16, labelW = 136 },
+  check2 = { x = 48, y = 250, w = 16, h = 16, labelW = 136 },
+  themeButton = { x = 430, y = 25, w = 160, h = 24 },
   count = { x = 48, y = 496, w = 160 },
   list = { x = 220, y = 72, w = 386, h = 440 },
   rowH = 20,
@@ -81,7 +84,10 @@ local function panels(look)
     rowArt = {
       texture = ART .. look.art .. "Rows",
       texW = 1024, texH = 256, slotH = 64, rowW = 800, rowH = 44, pillW = 96, pillH = 30,
+      offX = 128, faceX = 528, btnW = 390, btnH = 60, -- button faces, in the pill's slot
     },
+    label = look.label,
+    themeButton = { x = 1128, y = 117, w = 264, h = 42, fill = look.well, textColor = a },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },
     search = { x = 1436, y = 119, w = 300, h = 38 },
     close = { x = 1832, y = 111, w = 50, h = 50 },
@@ -91,15 +97,17 @@ local function panels(look)
       { x = 164, y = 487, w = 310, h = 53, padRight = 22, label = { x = 164, y = 455 } },
     },
     check = { x = 166, y = 580, w = 30, h = 30, labelW = 250 },
+    check2 = { x = 166, y = 628, w = 30, h = 30, labelW = 250 },
     count = look.count or { x = 166, y = 1084, w = 310 },
     list = { x = 552, y = 226, w = 820, h = 892 },
     model = { x = 1458, y = 250, w = 380, h = 354 },
     name = { x = 1452, y = 640, w = 404 },
     text = { x = 1452, y = 704, w = 404 },
     mapButton = { x = 1447, y = 960, w = 404, h = 62, label = true, font = "GameFontNormal",
-      textColor = look.onAccent, dimColor = look.onAccentDim },
+      textColor = look.onAccent, dimColor = { 0.82, 0.80, 0.76 }, offFace = true },
+    -- Not in the art: the addon draws it, and only while there are pins to clear.
     clearButton = { x = 1447, y = 1040, w = 404, h = 62, label = true, font = "GameFontNormal",
-      textColor = a },
+      textColor = a, face = true },
     colors = {
       menu = look.menu, menuBorder = { a[1], a[2], a[3], 0.55 },
       text = look.text, header = a, dim = look.dim, title = a,
@@ -112,8 +120,8 @@ end
 
 -- "Selva": modern dark-green panels with amber accents and tropical leaves.
 ns.Themes.selva = panels({
-  art = "Selva", accent = { 0.96, 0.66, 0.25 },
-  onAccent = { 0.13, 0.09, 0.02 }, onAccentDim = { 0.52, 0.36, 0.14 },
+  art = "Selva", label = "Selva", accent = { 0.96, 0.66, 0.25 },
+  onAccent = { 0.13, 0.09, 0.02 },
   text = { 0.92, 0.90, 0.82 }, dim = { 0.45, 0.52, 0.48 },
   tagHex = "e8a33d", tagText = { 1, 0.90, 0.78 },
   menu = { 0.05, 0.09, 0.075, 0.98 }, well = { 0.04, 0.07, 0.06, 1 },
@@ -122,19 +130,21 @@ ns.Themes.selva = panels({
 -- "Hunter": the same panels as a hunter's lodge: dark wood, stitched leather,
 -- brass lines, feathers, arrows and antlers around the edges.
 ns.Themes.hunter = panels({
-  art = "Hunter", accent = { 0.86, 0.69, 0.38 },
-  count = { x = 166, y = 640, w = 310 }, -- the bottom-left corner is covered by a fang and oak leaves
-  onAccent = { 0.16, 0.10, 0.03 }, onAccentDim = { 0.44, 0.33, 0.16 },
+  art = "Hunter", label = "Hunter", accent = { 0.86, 0.69, 0.38 },
+  count = { x = 166, y = 690, w = 310 }, -- the bottom-left corner is covered by a fang and oak leaves
+  onAccent = { 0.16, 0.10, 0.03 },
   text = { 0.94, 0.88, 0.77 }, dim = { 0.74, 0.64, 0.54 },
   tagHex = "d9ad5c", tagText = { 1, 0.93, 0.80 },
   menu = { 0.13, 0.08, 0.05, 0.98 }, well = { 0.09, 0.05, 0.03, 1 },
 })
 
+ns.DEFAULT_THEME = "hunter"
+
 function ns.ApplyTheme(name)
-  if not ns.Themes[name] then name = "classic" end
+  if not ns.Themes[name] then name = ns.DEFAULT_THEME end
   ns.themeName = name
   ns.Skin = ns.Themes[name]
   return name
 end
 
-ns.ApplyTheme("classic")
+ns.ApplyTheme(ns.DEFAULT_THEME)

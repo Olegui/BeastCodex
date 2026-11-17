@@ -3,7 +3,8 @@
     .cache/venv/Scripts/python tools/make_rows.py
 
 Four slots stacked vertically, 64 px apart, on a 1024x256 canvas:
-  0 row box   1 hovered row   2 selected row (amber outline and glow)   3 tag pill
+  0 row box   1 hovered row   2 selected row (accent outline and glow)
+  3 tag pill, then the grey "unavailable" button face and the outline button face
 The row slots are ROW_W x ROW_H, matching the on-screen row's proportions, so
 the rounded corners are not distorted when the texture is stretched to a row.
 The numbers here must match rowArt in Skin.lua.
@@ -16,6 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX_W, TEX_H, SLOT_H = 1024, 256, 64
 ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
+BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's slot
 SS = 4  # supersampling for smooth edges
 
 
@@ -28,17 +30,17 @@ def rounded(size, radius, fill, outline=None, width=0):
     return img.resize((w, h), Image.LANCZOS)
 
 
-# Per theme: row fill, row border, hover border, accent, pill fill, pill border.
+# Per theme: row fill, row border, hover border, accent, pill fill, pill border, button well.
 PALETTES = {
     "Selva": ((38, 54, 46, 150), (86, 108, 96, 150), (150, 170, 158, 170), (243, 169, 65),
-              (122, 62, 28, 235), (214, 126, 60, 255)),
+              (122, 62, 28, 235), (214, 126, 60, 255), (14, 22, 18, 200)),
     "Hunter": ((34, 20, 13, 135), (150, 112, 70, 140), (205, 168, 110, 180), (219, 176, 97),
-               (98, 62, 22, 235), (219, 176, 97, 255)),
+               (98, 62, 22, 235), (219, 176, 97, 255), (30, 17, 11, 200)),
 }
 
 
 def build(name):
-    fill, border, hover, accent, pill, pill_border = PALETTES[name]
+    fill, border, hover, accent, pill, pill_border, well = PALETTES[name]
     atlas = Image.new("RGBA", (TEX_W, TEX_H), (0, 0, 0, 0))
     size = (ROW_W, ROW_H)
     atlas.alpha_composite(rounded(size, 9, fill, border, 2), (0, 0))
@@ -53,6 +55,11 @@ def build(name):
     atlas.alpha_composite(selected, (0, 2 * SLOT_H))
 
     atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, pill, pill_border, 2), (0, 3 * SLOT_H))
+    # Grey face laid over the map button while a creature has no location.
+    atlas.alpha_composite(rounded((BTN_W, BTN_H), BTN_H // 2, (96, 94, 90, 255), (140, 138, 132, 255), 2),
+                          (OFF_X, 3 * SLOT_H))
+    # Outline face of the "clear pins" button, drawn only while pins exist.
+    atlas.alpha_composite(rounded((BTN_W, BTN_H), BTN_H // 2, well, accent + (255,), 2), (FACE_X, 3 * SLOT_H))
     return atlas
 
 

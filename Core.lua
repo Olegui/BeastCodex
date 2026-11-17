@@ -4,7 +4,8 @@ local L = ns.L
 ns.tests = {} -- { name, fn } pairs run by /beastcodex selftest
 
 local function defaults()
-  return { minimap = {}, theme = "classic", filters = { showUntameable = true, search = "" } }
+  return { minimap = {}, theme = ns.DEFAULT_THEME,
+    filters = { showUntameable = true, onlyLocated = false, search = "" } }
 end
 
 -- Returns a usable settings table from whatever was saved: a missing table,
@@ -30,6 +31,7 @@ function ns.SanitizeDB(db, creatures)
     out.filters.bucket = math.floor(f.bucket)
   end
   if type(f.showUntameable) == "boolean" then out.filters.showUntameable = f.showUntameable end
+  if type(f.onlyLocated) == "boolean" then out.filters.onlyLocated = f.onlyLocated end
   if type(f.search) == "string" then out.filters.search = f.search end
   return out
 end
@@ -73,11 +75,7 @@ SlashCmdList.BEASTCODEX = function(msg)
   elseif msg:match("^%s*modelscan") then
     if ns.RunModelScan then ns.RunModelScan() end
   elseif theme then
-    -- The window is built once per session, so a theme change reloads the UI.
-    if ns.Themes[theme] then
-      ns.db.theme = theme
-      ReloadUI()
-    else
+    if not ns.Window:SetTheme(theme) then
       local names = {}
       for name in pairs(ns.Themes) do names[#names + 1] = name end
       table.sort(names)
@@ -109,10 +107,13 @@ table.insert(ns.tests, { "db: valid filters survive", function()
   assert(db.filters.showUntameable == false and db.filters.search == "sn" and db.minimap.hide == true)
 end })
 
-table.insert(ns.tests, { "db: unknown theme falls back to classic, known theme survives", function()
-  assert(ns.SanitizeDB({ theme = "nope" }, sample).theme == "classic")
-  assert(ns.SanitizeDB({ theme = 5 }, sample).theme == "classic")
-  assert(ns.SanitizeDB({ theme = "classic" }, sample).theme == "classic")
+table.insert(ns.tests, { "db: unknown theme falls back to the default, known theme survives", function()
+  assert(ns.Themes[ns.DEFAULT_THEME], "default theme must exist")
+  assert(ns.SanitizeDB({ theme = "nope" }, sample).theme == ns.DEFAULT_THEME)
+  assert(ns.SanitizeDB({ theme = 5 }, sample).theme == ns.DEFAULT_THEME)
+  assert(ns.SanitizeDB(nil, sample).theme == ns.DEFAULT_THEME)
+  assert(ns.SanitizeDB({ filters = { onlyLocated = true } }, sample).filters.onlyLocated == true)
+  assert(ns.SanitizeDB({ filters = { onlyLocated = "x" } }, sample).filters.onlyLocated == false)
   for name in pairs(ns.Themes) do assert(ns.SanitizeDB({ theme = name }, sample).theme == name) end
 end })
 
@@ -129,7 +130,8 @@ end })
 
 table.insert(ns.tests, { "theme: every theme defines every rectangle the window needs", function()
   for name, t in pairs(ns.Themes) do
-    for _, key in ipairs({ "search", "close", "check", "list", "model", "name", "text", "mapButton", "clearButton" }) do
+    for _, key in ipairs({ "search", "close", "check", "check2", "themeButton", "list", "model", "name", "text",
+                           "mapButton", "clearButton" }) do
       assert(type(t[key]) == "table" and t[key].x and t[key].y, name .. " lacks " .. key)
     end
     assert(#t.filters == 3, name .. " needs 3 filters")

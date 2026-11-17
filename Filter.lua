@@ -47,10 +47,11 @@ function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
 
-local function matches(c, f, lo, hi, search)
+local function matches(c, f, lo, hi, search, canShow)
   if f.family and c.family ~= f.family then return false end
   if f.zone and c.zone ~= f.zone then return false end
   if f.showUntameable == false and not c.tame then return false end
+  if f.onlyLocated and not canShow(c) then return false end
   -- A level range matches a bucket when the two overlap. Unknown level matches no bucket.
   if lo and not (c.min and c.max and c.min <= hi and c.max >= lo) then return false end
   if search and not c.name:lower():find(search, 1, true) then return false end
@@ -60,15 +61,18 @@ end
 -- Returns rows for the list: { header = "text" } or { creature = c }.
 -- `creatures` must already be sorted by family and look (the generated data is).
 -- A header is only emitted when a creature follows it.
-function Filter.Apply(creatures, f, looks)
+-- `canShow(c)` says whether a creature can be put on the map; it defaults to
+-- the map module's answer and exists so the rule can be checked on its own.
+function Filter.Apply(creatures, f, looks, canShow)
   looks = looks or ns.Looks
+  canShow = canShow or ns.Map.CanShow
   local lo, hi
   if f.bucket then lo, hi = (f.bucket - 1) * 10 + 1, f.bucket * 10 end
   local search = f.search and f.search ~= "" and f.search:lower() or nil
 
   local rows, count, lastGroup = {}, 0, nil
   for _, c in ipairs(creatures) do
-    if matches(c, f, lo, hi, search) then
+    if matches(c, f, lo, hi, search, canShow) then
       local group = c.family .. "/" .. (c.look or "")
       if group ~= lastGroup then
         local look = c.look and looks[c.look]
@@ -155,6 +159,13 @@ test("classification labels: known ones translate, unknown ones give no label", 
   assert(ns.ClsLabel("rare") == L.RARE and ns.ClsLabel("rareelite") == L.RAREELITE)
   assert(ns.ClsLabel("spawned") == L.SPAWNED and ns.ClsLabel("spawnedelite") == L.SPAWNEDELITE)
   assert(ns.ClsLabel("bogus") == nil and ns.ClsLabel(nil) == nil)
+end)
+
+test("only-located keeps creatures that can be shown on the map", function()
+  local even = function(c) return c.id % 2 == 0 end
+  assert(ids(Filter.Apply(SAMPLE, { onlyLocated = true }, LOOKS, even)) == "2,4,6")
+  assert(ids(Filter.Apply(SAMPLE, { onlyLocated = false }, LOOKS, even)) == "1,2,3,4,5,6")
+  assert(ids(Filter.Apply(SAMPLE, { onlyLocated = true, family = "spider" }, LOOKS, even)) == "")
 end)
 
 test("buckets cover the data's level range", function()

@@ -91,9 +91,8 @@ function Detail:Show(c)
   self.name:SetText(c.name)
   local lines = Detail.Lines(c)
   local can = ns.Map.CanShow(c)
-  if not can then lines[#lines + 1] = L.LOCATION_UNKNOWN end
   self.text:SetText(table.concat(lines, "\n"))
-  self.mapButton:SetActive(can)
+  self.mapButton:SetActive(can, L.LOCATION_UNAVAILABLE)
 end
 
 function Detail:Preview(c)
@@ -107,7 +106,7 @@ function Detail:Pin(c)
 end
 
 function Detail:UpdateClearButton()
-  if self.clearButton then self.clearButton:SetActive(ns.Map.HasPins()) end
+  if self.clearButton then self.clearButton:SetShown(ns.Map.HasPins()) end
 end
 
 -- Builds the panel from the theme's rectangles, as children of the window.
