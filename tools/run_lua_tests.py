@@ -18,7 +18,7 @@ STUB = r"""
 local noop = setmetatable({}, {})
 getmetatable(noop).__index = function() return function() return noop end end
 getmetatable(noop).__call = function() return noop end
-function GetLocale() return "enUS" end
+function GetLocale() return TEST_LOCALE end
 function CreateFrame() return noop end
 function LibStub() return nil end
 function date() return "test" end
@@ -28,8 +28,9 @@ function print() end
 """
 
 
-def main():
+def run_locale(locale):
     lua = lua51.LuaRuntime(unpack_returned_tuples=True)
+    lua.globals().TEST_LOCALE = locale
     lua.execute(STUB)
     ns = lua.eval("{}")
     load = lua.eval("function(src, name) return loadstring(src, name) end")
@@ -64,8 +65,14 @@ def main():
     fails = [l for l in failed.split("\n") if l]
     for l in fails:
         print("FAIL", l)
-    print("%d files compiled, %d checks, %d failed" % (len(files), total, len(fails) + bad))
+    print("%s: %d files compiled, %d checks, %d failed" % (locale, len(files), total, len(fails) + bad))
     return 1 if fails or bad else 0
+
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    # English plus two translated clients: checks must not depend on English text.
+    return max(run_locale(loc) for loc in ("enUS", "ptBR", "zhCN"))
 
 
 if __name__ == "__main__":

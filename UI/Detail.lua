@@ -149,7 +149,15 @@ table.insert(ns.tests, { "detail: lines for a tameable rare with abilities", fun
   local t = table.concat(Detail.Lines({ name = "Snarler", family = "wolf", min = 42, max = 42, cls = "rare",
     zone = "Feralas", tame = true, speed = 2.0, abilities = { { "Bite", 6 }, { "Furious Howl", 3 } } }), "\n")
   ns.FamilyDiet = old
-  assert(t == "Wolf, Level 42, Rare\nFeralas\nTeaches: Bite 6, Furious Howl 3\nAttack speed: 2.0\nDiet: Meat", t)
+  -- Built from L so the check also holds on translated clients.
+  local want = table.concat({
+    L.FAMILY_wolf .. ", " .. L.LEVEL_FMT:format("42") .. ", " .. L.RARE,
+    "Feralas",
+    L.TEACHES_FMT:format("Bite 6, Furious Howl 3"),
+    L.ATTACK_SPEED_FMT:format(2.0),
+    L.DIET_FMT:format("Meat"),
+  }, "\n")
+  assert(t == want, t)
 end })
 
 table.insert(ns.tests, { "detail: missing fields produce no lines and no error", function()
@@ -158,7 +166,8 @@ table.insert(ns.tests, { "detail: missing fields produce no lines and no error",
   local lines = Detail.Lines({ name = "X", family = "bat", tame = false, note = "Friendly to Alliance players." })
   ns.FamilyDiet = old
   assert(#lines == 3, #lines)
-  assert(lines[1] == "Bat, Level ??" and lines[2]:find(L.UNTAMEABLE, 1, true) and lines[3]:find("Friendly", 1, true))
+  assert(lines[1] == L.FAMILY_bat .. ", " .. L.LEVEL_FMT:format(L.LEVEL_UNKNOWN), lines[1])
+  assert(lines[2]:find(L.UNTAMEABLE, 1, true) and lines[3]:find("Friendly", 1, true))
 end })
 
 table.insert(ns.tests, { "data: every creature formats without error", function()
