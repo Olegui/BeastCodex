@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: BeastCodex Probe (throwaway)
+## Notes: Tests client APIs for Beast Codex. Type /bcprobe. Delete afterwards.
+## SavedVariables: BeastCodexProbeDB
+
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\HereBeDragons-2.0.lua
+Libs\HereBeDragons-Pins-2.0.lua
+Probe.lua
