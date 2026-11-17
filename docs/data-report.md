@@ -1,0 +1,153 @@
+# Relatório dos dados (gerado)
+
+- Criaturas: 704 (domáveis 625, indomáveis 79)
+- Só no Huntmaster: 6; só no Petopia: 370; nas duas: 328
+- Sem coordenadas: 105
+- Sem mapa: 101
+- Sem nível: 7
+
+## Por família
+
+- bat: 20
+- bear: 55
+- birdofprey: 17
+- boar: 34
+- carrionbird: 33
+- cat: 91
+- crab: 25
+- crocolisk: 31
+- fox: 6
+- gorilla: 19
+- hyena: 27
+- raptor: 53
+- scorpid: 33
+- spider: 104
+- tallstrider: 18
+- turtle: 27
+- windserpent: 28
+- wolf: 83
+
+## Divergências de nível entre Huntmaster e Petopia (vale o Petopia)
+
+- 2070 Moonstalker Runt: Huntmaster 10-17, Petopia 10-11
+- 2237 Moonstalker Sire: Huntmaster 17-18, Petopia 17-19
+- 2522 Jaguero Stalker: Huntmaster 41-41, Petopia 50-50
+- 3100 Elder Mottled Boar: Huntmaster 8-9, Petopia 9-10
+- 3241 Savannah Patriarch: Huntmaster 15-16, Petopia 14-16
+- 3246 Fleeting Plainstrider: Huntmaster 13-13, Petopia 12-13
+- 4304 Scarlet Tracking Hound: Huntmaster 33-33, Petopia 33-34
+- 4345 Drywallow Daggermaw: Huntmaster 39-40, Petopia 40-41
+- 4412 Darkfang Creeper: Huntmaster 37-38, Petopia 38-39
+- 4425 Blind Hunter: Huntmaster 27-27, Petopia 32-32
+- 4512 Rotting Agam'ar: Huntmaster 26-26, Petopia 27-28
+- 4514 Raging Agam'ar: Huntmaster 25-25, Petopia 25-26
+- 4538 Kraul Bat: Huntmaster 26-26, Petopia 30-31
+- 4539 Greater Kraul Bat: Huntmaster 26-26, Petopia 32-32
+- 4821 Skittering Crustacean: Huntmaster 22-22, Petopia 22-23
+- 4823 Barbed Crustacean: Huntmaster 23-23, Petopia 25-26
+- 4824 Aku'mai Fisher: Huntmaster 22-23, Petopia 23-24
+- 4841 Deadmire: Huntmaster 41-41, Petopia 45-45
+- 4861 Shrike Bat: Huntmaster 37-38, Petopia 38-39
+- 4887 Ghamoo-ra: Huntmaster 23-23, Petopia 25-25
+- 5056 Deviate Dreadfang: Huntmaster 19-19, Petopia 20-21
+- 5291 Hakkari Frostwing: Huntmaster 48-49, Petopia 49-50
+- 5428 Roc: Huntmaster 41-43, Petopia 42-43
+- 5708 Spawn of Hakkar: Huntmaster 49-49, Petopia 51-51
+- 5756 Deviate Venomwing: Huntmaster 19-19, Petopia 20-21
+- 5988 Scorpok Stinger: Huntmaster 46-47, Petopia 50-51
+- 6585 Uhk'loc: Huntmaster 52-53, Petopia 52-52
+- 6788 Den Mother: Huntmaster 18-19, Petopia 19-19
+- 7022 Venomlash Scorpid: Huntmaster 37-38, Petopia 39-40
+- 7078 Cleft Scorpid: Huntmaster 36-36, Petopia 35-36
+- 7405 Deadly Cleft Scorpid: Huntmaster 37-38, Petopia 42-43
+- 8336 Hakkari Sapper: Huntmaster 48-49, Petopia 49-50
+- 8926 Deep Stinger: Huntmaster 50-51, Petopia 50-52
+- 8927 Dark Screecher: Huntmaster 50-51, Petopia 50-52
+- 8933 Cave Creeper: Huntmaster 50-51, Petopia 50-52
+- 11370 Razzashi Broodwidow: Huntmaster 56-61, Petopia 61-61
+- 11736 Stonelash Pincer: Huntmaster 56-56, Petopia 56-57
+- 11737 Stonelash Flayer: Huntmaster 57-58, Petopia 58-59
+- 14233 Ripscale: Huntmaster 37-37, Petopia 39-39
+- 250873 Juvenile Vuldren: Huntmaster 1-3, Petopia 1-1
+- 250926 Scrawny Ursera: Huntmaster 4-4, Petopia 3-4
+- 250927 Shadowgale Ursera: Huntmaster None-None, Petopia 10-11
+- 250928 Highlands Ursera: Huntmaster 7-7, Petopia 7-8
+- 251115 Urs'anah: Huntmaster 4-4, Petopia 5-5
+
+## Contagens que não batem com a página do Petopia
+
+- owlwhite: page says 4 tameable, parsed 3
+- carrionbirdskinbrown: page says 6 tameable, parsed 5
+- seaturtleskinred: page says 4 tameable, parsed 3
+- wolfskincoyote: page says 10 tameable, parsed 9
+
+## Domáveis sem coordenadas
+
+- 3868 Blood Seeker (Shadowfang Keep (Dungeon))
+- 8927 Dark Screecher (Blackrock Depths (Dungeon))
+- 4539 Greater Kraul Bat (Razorfen Kraul (Dungeon))
+- 4538 Kraul Bat (Razorfen Kraul (Dungeon))
+- 4861 Shrike Bat (Uldaman (Dungeon))
+- 11368 Bloodseeker Bat (Zul'Gurub (Raid))
+- 14965 Frenzied Bloodseeker Bat (Zul'Gurub (Raid))
+- 3866 Vile Bat (Shadowfang Keep (Dungeon))
+- 4425 Blind Hunter (Razorfen Kraul (Dungeon))
+- 4512 Rotting Agam'ar (Razorfen Kraul (Dungeon))
+- 4511 Agam'ar (Razorfen Kraul (Dungeon))
+- 4514 Raging Agam'ar (Razorfen Kraul (Dungeon))
+- 263315 Ombassa (Riverglades)
+- 11365 Zulian Panther (Zul'Gurub (Raid))
+- 15101 Zulian Prowler (Zul'Gurub (Raid))
+- 11360 Zulian Cub (Zul'Gurub (Raid))
+- 11361 Zulian Tiger (Zul'Gurub (Raid))
+- 4823 Barbed Crustacean (Moonshrine Ruins, Blackfathom Deeps (Dungeon))
+- 4821 Skittering Crustacean (Blackfathom Deeps (Dungeon))
+- 4822 Snapping Crustacean (The Pool of Ask'ar, Blackfathom Deeps (Dungeon))
+- 5053 Deviate Crocolisk (Wailing Caverns (Dungeon))
+- 260797 Elder Crocolisk (Excavation Site: Wetlands (Dungeon))
+- 260796 Marsh Crocolisk (Excavation Site: Wetlands (Dungeon))
+- 260798 Young Crocolisk (Excavation Site: Wetlands (Dungeon))
+- 15043 Zulian Crocolisk (Zul'Gurub (Raid))
+- 274715 Marsh Skulker (Excavation Site: Wetlands (Dungeon))
+- 4304 Scarlet Tracking Hound (Scarlet Monastery (Dungeon))
+- 260800 Thicket Lurker (Excavation Site: Wetlands (Dungeon))
+- 3637 Deviate Guardian (Wailing Caverns (Dungeon))
+- 14821 Razzashi Raptor (Zul'Gurub (Raid))
+- 260802 Thicket Matriarch (Excavation Site: Wetlands (Dungeon))
+- 3636 Deviate Ravager (Wailing Caverns (Dungeon))
+- 260799 Young Riptooth (Excavation Site: Wetlands (Dungeon))
+- 7022 Venomlash Scorpid (Uldaman (Dungeon))
+- 7078 Cleft Scorpid (Uldaman (Dungeon))
+- 7405 Deadly Cleft Scorpid (Uldaman (Dungeon))
+- 8926 Deep Stinger (Blackrock Depths (Dungeon))
+- 250619 Broodwidow (Ruins of Lordaeron (Dungeon))
+- 14532 Razzashi Venombrood (Zul'Gurub (Raid))
+- 250735 Venom Lurker (Ruins of Lordaeron (Dungeon))
+- 250625 Broodling (Ruins of Lordaeron (Dungeon))
+- 10375 Spire Spiderling (Blackrock Spire (Dungeon))
+- 250484 Spider (Ruins of Lordaeron (Dungeon))
+- 256040 Deep Widow (Ruins of Lordaeron (Dungeon))
+- 15041 Spawn of Mar'li (Zul'Gurub (Raid))
+- 8933 Cave Creeper (Blackrock Depths (Dungeon))
+- 250488 Tarantula (Ruins of Lordaeron (Dungeon))
+- 272392 Giant Moonstrider (Moonglade)
+- 272391 Moonstrider (Moonglade)
+- 4824 Aku'mai Fisher (The Pool of Ask'ar, Blackfathom Deeps (Dungeon))
+- 260810 Highland Snapper (Excavation Site: Wetlands (Dungeon))
+- 3653 Kresh (Wailing Caverns (Dungeon))
+- 13599 Stolid Snapjaw (Maraudon (Dungeon))
+- 4887 Ghamoo-ra (The Pool of Ask'ar, Blackfathom Deeps (Dungeon))
+- 4825 Aku'mai Snapjaw (zona desconhecida)
+- 8336 Hakkari Sapper (The Temple of Atal'Hakkar (Dungeon))
+- 5056 Deviate Dreadfang (Wailing Caverns (Dungeon))
+- 5756 Deviate Venomwing (Wailing Caverns (Dungeon))
+- 11357 Son of Hakkar (Zul'Gurub (Raid))
+- 5708 Spawn of Hakkar (The Temple of Atal'Hakkar (Dungeon))
+- 5291 Hakkari Frostwing (The Temple of Atal'Hakkar (Dungeon))
+- 9696 Bloodaxe Worg (Blackrock Spire (Dungeon))
+- 10221 Bloodaxe Worg Pup (Blackrock Spire (Dungeon))
+- 2275 Enraged Stanley (Hillsbrad Foothills)
+- 3862 Slavering Worg (Shadowfang Keep (Dungeon))
+- 10981 Frostwolf (Alterac Valley (Battleground))
+- 9416 Scarshield Worg (Blackrock Spire (Dungeon))
+- 3861 Bleak Worg (Shadowfang Keep (Dungeon))
