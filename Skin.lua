@@ -95,6 +95,7 @@ local function panels(look)
         box = { 368, 256, 48, 48 },      -- checkbox, cut from the round close button
         tick = { 432, 256, 48, 48 },     -- its tick
         clearSearch = { 496, 256, 54, 42 }, -- the search field's magnifier spot with an X
+        pillGrey = { 920, 192, 96, 30 },  -- tag for plain rares
       },
     },
     label = look.label,

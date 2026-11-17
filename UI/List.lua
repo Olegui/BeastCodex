@@ -48,6 +48,7 @@ local function paint(row, data)
   row.selected:Hide()
   row.tag:SetText("")
   if row.pill then row.pill:Hide() end
+  if row.pillGrey then row.pillGrey:Hide() end
   if not c then
     row:EnableMouse(false)
     if row.bg then row.bg:Hide() end
@@ -71,10 +72,15 @@ local function paint(row, data)
   local tagW = 0
   if cls then
     row.tag:SetText(cls)
+    -- Rare gets a grey tag, everything else (elite, spawned) the accent one.
+    local grey = List.GreyTag(c.cls)
+    local tc = grey and row.greyText or row.tagColor
+    row.tag:SetTextColor(tc[1], tc[2], tc[3])
     tagW = row.tag:GetStringWidth() + (row.pill and 2 * PILL_PAD or 0)
-    if row.pill then
-      row.pill:SetWidth(tagW)
-      row.pill:Show()
+    local pill = grey and row.pillGrey or row.pill
+    if pill then
+      pill:SetWidth(tagW)
+      pill:Show()
     end
   end
   row.name:SetWidth(List.NameWidth(row.nameMax, row.name:GetStringWidth(), tagW, TAG_GAP))
@@ -128,7 +134,7 @@ local function newRow(parent, width, height)
   local col, art = S.colors, S.rowArt
   local row = CreateFrame("Button", nil, parent)
   row:SetSize(width, height)
-  row.bg, row.pill = false, false -- only themes with row art have them
+  row.bg, row.pill, row.pillGrey = false, false, false -- only themes with row art have them
 
   local hl
   if art then
@@ -177,10 +183,17 @@ local function newRow(parent, width, height)
   local tag = col.tagText or { tonumber(col.tag:sub(1, 2), 16) / 255, tonumber(col.tag:sub(3, 4), 16) / 255,
     tonumber(col.tag:sub(5, 6), 16) / 255 }
   row.tag:SetTextColor(tag[1], tag[2], tag[3])
+  row.tagColor = tag
+  row.greyText = col.tagGreyText or { 0.82, 0.82, 0.82 }
   if art then
     row.pill = slot(row, "ARTWORK", art, 3, art.pillW, art.pillH)
     row.pill:SetHeight(height - 6)
     row.pill:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+    row.pillGrey = ns.UI.Atlas(row, "ARTWORK", "pillGrey") or false
+    if row.pillGrey then
+      row.pillGrey:SetHeight(height - 6)
+      row.pillGrey:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+    end
     row.tag:SetPoint("LEFT", row.pill, "LEFT", PILL_PAD, 0)
   else
     row.tag:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
@@ -263,7 +276,18 @@ function List:Create(parent, r)
   self.holder = holder
 end
 
+-- Classifications whose tag is drawn in grey instead of the accent color.
+function List.GreyTag(cls)
+  return cls == "rare"
+end
+
 -- Self-checks ---------------------------------------------------------------
+
+table.insert(ns.tests, { "list: only plain rare gets the grey tag", function()
+  assert(List.GreyTag("rare") == true)
+  assert(not List.GreyTag("rareelite") and not List.GreyTag("elite") and not List.GreyTag("spawned"))
+  assert(not List.GreyTag(nil))
+end })
 
 table.insert(ns.tests, { "list: the tag is never cut, the name gives way", function()
   assert(List.NameWidth(200, 120, 0, 6) == 120)   -- short name, no tag
