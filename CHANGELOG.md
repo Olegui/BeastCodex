@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- New icon: a plain paw on a flat color, easier to tell apart at minimap size.
+- The addon list groups it under "Assan", together with the author's other addons.
+
 ## 1.1.0
 
 - Classic theme now uses the game's own interface: window frame, panels, red buttons, checkboxes, search box, drop-down menus and scroll bar.
