@@ -1,4 +1,4 @@
-"""Generates the Selva theme's row atlas, Art/SelvaRows.tga.
+"""Generates each panel theme's row atlas, Art/<Theme>Rows.tga.
 
     .cache/venv/Scripts/python tools/make_rows.py
 
@@ -17,7 +17,6 @@ TEX_W, TEX_H, SLOT_H = 1024, 256, 64
 ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
 SS = 4  # supersampling for smooth edges
-AMBER = (243, 169, 65)
 
 
 def rounded(size, radius, fill, outline=None, width=0):
@@ -29,26 +28,37 @@ def rounded(size, radius, fill, outline=None, width=0):
     return img.resize((w, h), Image.LANCZOS)
 
 
-def build():
+# Per theme: row fill, row border, hover border, accent, pill fill, pill border.
+PALETTES = {
+    "Selva": ((38, 54, 46, 150), (86, 108, 96, 150), (150, 170, 158, 170), (243, 169, 65),
+              (122, 62, 28, 235), (214, 126, 60, 255)),
+    "Hunter": ((34, 20, 13, 135), (150, 112, 70, 140), (205, 168, 110, 180), (219, 176, 97),
+               (98, 62, 22, 235), (219, 176, 97, 255)),
+}
+
+
+def build(name):
+    fill, border, hover, accent, pill, pill_border = PALETTES[name]
     atlas = Image.new("RGBA", (TEX_W, TEX_H), (0, 0, 0, 0))
     size = (ROW_W, ROW_H)
-    atlas.alpha_composite(rounded(size, 9, (38, 54, 46, 150), (86, 108, 96, 150), 2), (0, 0))
-    atlas.alpha_composite(rounded(size, 9, (255, 255, 255, 22), (150, 170, 158, 170), 2), (0, SLOT_H))
+    atlas.alpha_composite(rounded(size, 9, fill, border, 2), (0, 0))
+    atlas.alpha_composite(rounded(size, 9, (255, 255, 255, 22), hover, 2), (0, SLOT_H))
 
     glow = Image.new("RGBA", size, (0, 0, 0, 0))
-    glow.alpha_composite(rounded(size, 9, (0, 0, 0, 0), AMBER + (255,), 6))
+    glow.alpha_composite(rounded(size, 9, (0, 0, 0, 0), accent + (255,), 6))
     glow = glow.filter(ImageFilter.GaussianBlur(5))          # soft inner glow from the outline
-    selected = rounded(size, 9, AMBER + (40,))
+    selected = rounded(size, 9, accent + (40,))
     selected.alpha_composite(glow)
-    selected.alpha_composite(rounded(size, 9, (0, 0, 0, 0), AMBER + (255,), 2))
+    selected.alpha_composite(rounded(size, 9, (0, 0, 0, 0), accent + (255,), 2))
     atlas.alpha_composite(selected, (0, 2 * SLOT_H))
 
-    atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, (122, 62, 28, 235), (214, 126, 60, 255), 2), (0, 3 * SLOT_H))
+    atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, pill, pill_border, 2), (0, 3 * SLOT_H))
     return atlas
 
 
 if __name__ == "__main__":
-    out = os.path.join(ROOT, "Art", "SelvaRows.tga")
-    build().save(out, format="TGA", compression=None)
-    print("wrote %s (%dx%d, slots every %d px, row %dx%d, pill %dx%d)" % (
-        out, TEX_W, TEX_H, SLOT_H, ROW_W, ROW_H, PILL_W, PILL_H))
+    for name in PALETTES:
+        out = os.path.join(ROOT, "Art", name + "Rows.tga")
+        build(name).save(out, format="TGA", compression=None)
+        print("wrote %s (%dx%d, slots every %d px, row %dx%d, pill %dx%d)" % (
+            out, TEX_W, TEX_H, SLOT_H, ROW_W, ROW_H, PILL_W, PILL_H))
