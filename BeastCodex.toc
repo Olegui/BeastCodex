@@ -24,6 +24,7 @@ Locales\ptBR.lua
 Locales\ruRU.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
+Locales\LookNames.lua
 
 Data\Creatures.lua
 Skin.lua

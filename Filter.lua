@@ -43,6 +43,11 @@ function ns.ClsLabel(cls)
   return key and L[key] or nil
 end
 
+-- An appearance's name in the client's language (Locales/LookNames.lua), else English.
+function Filter.LookName(look)
+  return ns.LookNames and ns.LookNames[look.name] or look.name
+end
+
 function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
@@ -81,7 +86,7 @@ function Filter.Apply(creatures, f, looks, canShow, nameOf)
       local group = c.family .. "/" .. (c.look or "")
       if group ~= lastGroup then
         local look = c.look and looks[c.look]
-        rows[#rows + 1] = { header = look and look.name or Filter.FamilyName(c.family) }
+        rows[#rows + 1] = { header = look and Filter.LookName(look) or Filter.FamilyName(c.family) }
         lastGroup = group
       end
       rows[#rows + 1] = { creature = c }
@@ -122,7 +127,7 @@ local function test(name, fn) table.insert(ns.tests, { "filter: " .. name, fn })
 test("no filters returns everything with headers", function()
   local rows, count = apply({ showUntameable = true, search = "" })
   assert(count == 6 and ids(rows) == "1,2,3,4,5,6", ids(rows))
-  assert(headers(rows) == L.FAMILY_spider .. "|Charcoal Black Wolf|" .. L.FAMILY_wolf, headers(rows))
+  assert(headers(rows) == L.FAMILY_spider .. "|" .. Filter.LookName(LOOKS.black) .. "|" .. L.FAMILY_wolf, headers(rows))
 end)
 
 test("level buckets match by overlap", function()
@@ -182,6 +187,16 @@ test("search also matches the name in the client's language", function()
   assert(found("filhote") == "4")
   assert(found("lobo") == "4")            -- only the one whose known name has it
   assert(ids(Filter.Apply(SAMPLE, { search = "rosna" }, LOOKS)) == "")  -- without names: English only
+end)
+
+test("look names: translated when the language has one, English otherwise", function()
+  local old = ns.LookNames
+  ns.LookNames = { ["Charcoal Black Wolf"] = "Lobo Preto Carvão" }
+  local a, b = Filter.LookName({ name = "Charcoal Black Wolf" }), Filter.LookName({ name = "Tan Wolf" })
+  ns.LookNames = nil
+  local c = Filter.LookName({ name = "Tan Wolf" })
+  ns.LookNames = old
+  assert(a == "Lobo Preto Carvão" and b == "Tan Wolf" and c == "Tan Wolf")
 end)
 
 test("buckets cover the data's level range", function()

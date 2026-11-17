@@ -22,7 +22,8 @@ def main():
     base = read(os.path.join(ROOT, "Locales", "enUS.lua"))
     want = set(base) - SHARED
     problems = []
-    files = sorted(glob.glob(os.path.join(ROOT, "Locales", "*.lua")))
+    # LookNames.lua is generated and checked by tools/make_look_names.py.
+    files = sorted(p for p in glob.glob(os.path.join(ROOT, "Locales", "*.lua")) if not p.endswith("LookNames.lua"))
     for path in files:
         name = os.path.basename(path)
         if name == "enUS.lua":
