@@ -81,8 +81,10 @@ function UI.Button(parent, r, text, showLabel)
   hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   if showLabel then
     b.label = b:CreateFontString(nil, "ARTWORK", r.font or "GameFontHighlightSmall")
-    b.label:SetPoint("LEFT", 6, 0)
-    b.label:SetPoint("RIGHT", -(r.padRight or 6), 0)
+    -- labelY nudges the text up (window units) on art whose visible face is
+    -- not centered in its rect, like a button with a heavier bottom rim.
+    b.label:SetPoint("LEFT", 6, r.labelY or 0)
+    b.label:SetPoint("RIGHT", -(r.padRight or 6), r.labelY or 0)
     b.label:SetWordWrap(false)
     -- The client fonts carry a dark drop shadow; under dark text on a light
     -- button it reads as blur, so such labels go without it.

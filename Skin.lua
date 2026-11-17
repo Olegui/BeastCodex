@@ -118,7 +118,7 @@ local function panels(look)
     check = { x = 166, y = 578, w = 34, h = 34, labelW = 262 },
     check2 = { x = 166, y = 628, w = 34, h = 34, labelW = 262 },
     -- The main button's look, in red; its face reaches past the rect to cover the rim.
-    resetButton = { x = 164, y = 690, w = 310, h = 50, face = "red", facePad = 2.9, font = "GameFontNormal",
+    resetButton = { x = 164, y = 690, w = 310, h = 50, face = "red", facePad = 2.9, labelY = 2, font = "GameFontNormal",
       textColor = { 1, 0.91, 0.84 } },
     count = look.count or { x = 166, y = 1084, w = 310 },
     list = { x = 552, y = 226, w = 820, h = 892 },
