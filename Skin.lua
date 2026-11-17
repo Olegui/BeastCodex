@@ -103,42 +103,6 @@ ns.Themes.selva = ns.ArtTheme({
   },
 })
 
--- "Tomo": an open hunter's tome on a wooden table. Parchment pages, so the
--- text is dark and drawn without the client fonts' drop shadow. Measured on
--- the concept image scaled to 2000 px wide. The search plaque, the close
--- stud, the claw plate (the "show untameable" toggle) and the two wax seals
--- (map and clear) are part of the art and carry no text.
-ns.Themes.tomo = ns.ArtTheme({
-  srcW = 2000, srcH = 1244, W = 960, rowH = 20,
-  texture = "Interface\\AddOns\\BeastCodex\\Art\\Tomo",
-  texW = 1024, texH = 1024, imgW = 1024, imgH = 637,
-  noShadow = true,
-  cols = { zone = 0.30, level = 36, indent = 20 }, -- the page is narrow: favor the name
-  title = { x = 375, y = 286, w = 494, center = true },
-  search = { x = 812, y = 92, w = 450, h = 44, textColor = { 0.93, 0.87, 0.74 } },
-  close = { x = 1668, y = 232, w = 60, h = 60 },
-  filters = {
-    { x = 346, y = 347, w = 180, h = 38 },
-    { x = 532, y = 347, w = 180, h = 38 },
-    { x = 718, y = 347, w = 180, h = 38 },
-  },
-  check = { x = 182, y = 790, w = 86, h = 80, markScale = 0.8 },
-  count = { x = 352, y = 1046, w = 400 },
-  list = { x = 350, y = 402, w = 550, h = 626 },
-  model = { x = 1160, y = 342, w = 445, h = 348 },
-  name = { x = 1190, y = 744, w = 395, center = true },
-  text = { x = 1120, y = 828, w = 530 },
-  mapButton = { x = 1425, y = 955, w = 120, h = 120 },
-  clearButton = { x = 1575, y = 955, w = 120, h = 120 },
-  scroll = { width = 4, track = { 0.30, 0.20, 0.10, 0.18 }, thumb = { 0.40, 0.20, 0.10, 0.75 } },
-  colors = {
-    text = { 0.22, 0.14, 0.07 }, header = { 0.50, 0.15, 0.07 }, dim = { 0.46, 0.37, 0.27 },
-    title = { 0.20, 0.12, 0.06 }, tag = "8a3b12",
-    hover = { 0.30, 0.18, 0.08, 0.14 }, selected = { 0.50, 0.15, 0.07, 0.20 },
-    menu = { 0.87, 0.77, 0.59, 0.98 }, menuBorder = { 0.35, 0.22, 0.10, 0.9 },
-  },
-})
-
 function ns.ApplyTheme(name)
   if not ns.Themes[name] then name = "classic" end
   ns.themeName = name
