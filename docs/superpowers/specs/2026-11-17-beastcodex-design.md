@@ -49,9 +49,17 @@ janela padrão não cumpre o objetivo.
 ## Decisões do dono do projeto
 
 - Nome: **Beast Codex**. Pasta do addon e repositório: `BeastCodex`.
-- Fonte dos dados: Petopia Forever (https://www.wow-petopia.com/forever/)
-  para criaturas, e Wowhead Forever para coordenadas (o mapa da página de
-  cada NPC, `https://www.wowhead.com/forever/npc=<id>`).
+- Fonte dos dados, nesta ordem:
+  1. **Huntmaster** (https://github.com/yurristudio/Huntermaster, licença
+     MIT) como base: 334 criaturas domáveis com nome, ID, nível, família,
+     dieta, raro/elite, coordenadas e ID do mapa do jogo.
+  2. **Petopia Forever** (https://www.wow-petopia.com/forever/) para o que
+     falta: aparências, criaturas indomáveis, famílias ausentes (Raptor,
+     Core Hound), velocidade de ataque e criaturas que o Huntmaster não tem.
+  3. **Wowhead Forever** (`https://www.wowhead.com/forever/npc=<id>`) só
+     para coordenadas das criaturas que vierem do Petopia sem elas.
+- Dados de addons com "todos os direitos reservados" (TameDex, Hunter's
+  Field Guide) não são copiados. O Hunter's Handbook (GPLv3) não é usado.
 - Disposição da janela: filtros à esquerda, lista ao centro, painel de
   detalhes com modelo 3D e botão do mapa à direita. Aprovada em esboço.
 - Pins: um ou vários, conforme os pontos de aparição.
@@ -83,6 +91,12 @@ Estas são decisões minhas. O dono pode trocar qualquer uma.
 
 ### Dados
 
+- O script lê primeiro o `Data/TameableNPCs.lua` do Huntmaster (cópia local
+  em `.cache/`, fora do Git) e junta com o Petopia pelo ID do NPC. Quando
+  os dois divergem num campo, vale o Huntmaster para coordenadas e mapa, e
+  o Petopia para o resto; as divergências vão para o relatório.
+- O README e o arquivo de licença trazem o aviso de direitos do Huntmaster
+  (Yurri Studio e Justin Moody), como a licença MIT exige.
 - Um script em `tools/` (Python, só biblioteca padrão) percorre o Petopia
   uma vez: famílias, aparências, criaturas. De cada criatura guarda nome,
   ID do NPC (do link do Wowhead), nível mínimo e máximo, raro, elite, zona,
