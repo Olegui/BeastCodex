@@ -125,7 +125,7 @@ ns.Themes.hunter = panels({
   art = "Hunter", accent = { 0.86, 0.69, 0.38 },
   count = { x = 166, y = 640, w = 310 }, -- the bottom-left corner is covered by a fang and oak leaves
   onAccent = { 0.16, 0.10, 0.03 }, onAccentDim = { 0.44, 0.33, 0.16 },
-  text = { 0.94, 0.88, 0.77 }, dim = { 0.58, 0.49, 0.41 },
+  text = { 0.94, 0.88, 0.77 }, dim = { 0.74, 0.64, 0.54 },
   tagHex = "d9ad5c", tagText = { 1, 0.93, 0.80 },
   menu = { 0.13, 0.08, 0.05, 0.98 }, well = { 0.09, 0.05, 0.03, 1 },
 })
