@@ -16,4 +16,4 @@ Cliente: 1.60.1 build 70959, interface 16001, ptBR, WOW_PROJECT_ID 18.
 Decisões:
 - Pins: HereBeDragons-Pins, como planejado.
 - Nomes de criatura ficam em inglês na versão 1. Zonas usam o nome do jogo.
-- Modelo: pendente da confirmação visual do dono.
+- Modelo: `SetCreature(id)` funciona (o dono viu o lobo). Não é preciso ID de exibição.
