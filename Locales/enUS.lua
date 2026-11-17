@@ -16,7 +16,6 @@ ns.L = setmetatable({
   RARE = "Rare", ELITE = "Elite", RAREELITE = "Rare Elite",
   SPAWNED = "Spawned", SPAWNEDELITE = "Spawned Elite",
   UNTAMEABLE = "Cannot be tamed",
-  HOVER_HINT = "Hover a beast to preview it. Click to pin it.",
   LEVEL_FMT = "Level %s",
   LEVEL_UNKNOWN = "??",
   TEACHES_FMT = "Teaches: %s",
@@ -26,7 +25,7 @@ ns.L = setmetatable({
   CLEAR_PINS = "Clear pins",
   LOCATION_UNAVAILABLE = "Location unavailable",
   THEME = "Theme",
-  SELECT_BEAST = "Select a beast",
+  SELECT_BEAST_DETAILS = "Select a beast for more details.",
   CREDITS = "Developed by %s",
   ONLY_LOCATED = "Only with map location",
 

@@ -95,11 +95,16 @@ function Detail:Show(c)
   if not self.frame then return end
   if self.shown == c then return end
   self.shown = c
-  if not c then
+  -- With nothing selected the panel is a plain surface with one line of text:
+  -- the cover hides the viewport, the divider and the button painted in the art.
+  local empty = not c
+  self.cover:SetShown(empty)
+  self.model:SetShown(not empty)
+  self.mapButton:SetShown(not empty)
+  if empty then
     pcall(self.model.ClearModel, self.model)
     self.name:SetText("")
-    self.text:SetText(L.HOVER_HINT)
-    self.mapButton:SetActive(false, L.SELECT_BEAST) -- nothing to show on the map yet
+    self.text:SetText("")
     return
   end
   showModel(self.model, c)
@@ -159,6 +164,28 @@ function Detail:Create(parent)
     ns.Map.Clear()
     self:UpdateClearButton()
   end)
+
+  local cover = CreateFrame("Frame", nil, parent)
+  UI.Place(cover, parent, S.detailArea)
+  cover:SetFrameLevel(parent:GetFrameLevel() + 5)
+  if S.emptyArt then
+    local surface = cover:CreateTexture(nil, "BACKGROUND")
+    local area = S.emptyArt.area
+    surface:SetPoint("TOPLEFT", parent, "TOPLEFT", area.x, -area.y)
+    surface:SetSize(area.w, area.h)
+    surface:SetTexture(S.emptyArt.texture)
+    surface:SetTexCoord(0, S.emptyArt.imgW / S.emptyArt.texW, 0, S.emptyArt.imgH / S.emptyArt.texH)
+  end
+  local message = cover:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  message:SetPoint("CENTER")
+  message:SetWidth(S.detailArea.w * 0.8)
+  message:SetJustifyH("CENTER")
+  message:SetTextColor(c.text[1], c.text[2], c.text[3])
+  message:SetText(L.SELECT_BEAST_DETAILS)
+  UI.Flat(message)
+  self.cover = cover
+  -- Pins can outlive the selection, so the clear button stays reachable above the cover.
+  self.clearButton:SetFrameLevel(cover:GetFrameLevel() + 3)
 
   self.frame = parent
   ns.List.onEnter = function(creature) self:Preview(creature) end
