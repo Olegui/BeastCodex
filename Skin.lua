@@ -7,38 +7,47 @@ local ADDON, ns = ...
 -- top-left corner, y growing downward.
 ns.Themes = {}
 
--- Plain dark frame drawn with client textures. Needs no art file.
+-- The game's own look: the window, panels, buttons, checkboxes, search box,
+-- drop-downs and menus are the client's templates (`blizzard = true`), the
+-- same ones the default interface uses. Needs no art file. Where the client
+-- lacks a template, the control falls back to a plain one (see UI.Make).
 ns.Themes.classic = {
   label = "Classic",
-  W = 896, H = 560,
-  backdrop = true,
-  title = { x = 48, y = 28 },
-  search = { x = 668, y = 26, w = 176, h = 22, label = true, padRight = 24 },
-  searchClear = { x = 822, y = 26, w = 22, h = 22, text = "X" },
-  close = { x = 852, y = 22, w = 24, h = 24, text = "X" },
-  filters = {
-    { x = 48, y = 88, w = 160, h = 24, label = { x = 48, y = 72 } },
-    { x = 48, y = 138, w = 160, h = 24, label = { x = 48, y = 122 } },
-    { x = 48, y = 188, w = 160, h = 24, label = { x = 48, y = 172 } },
+  blizzard = true,
+  W = 900, H = 584,
+  -- Sunken panels behind the three columns (InsetFrameTemplate).
+  insets = {
+    { x = 10, y = 60, w = 212, h = 488 },
+    { x = 226, y = 60, w = 424, h = 488 },
+    { x = 654, y = 60, w = 238, h = 488 },
   },
-  check = { x = 48, y = 226, w = 16, h = 16, labelW = 136 },
-  check2 = { x = 48, y = 250, w = 16, h = 16, labelW = 136 },
-  resetButton = { x = 48, y = 280, w = 160, h = 22 },
-  themeButton = { x = 430, y = 25, w = 160, h = 24 },
-  count = { x = 48, y = 496, w = 160 },
-  credits = { x = 48, y = 534, w = 800 },
-  list = { x = 220, y = 72, w = 386, h = 440 },
+  search = { x = 676, y = 32, w = 206, h = 20 },
+  searchClear = { x = 0, y = 0, w = 1, h = 1 }, -- the search box template has its own
+  close = { x = 0, y = 0, w = 1, h = 1 },       -- the window template has its own
+  filters = {
+    { x = 20, y = 92, w = 192, h = 26, label = { x = 22, y = 74 } },
+    { x = 20, y = 146, w = 192, h = 26, label = { x = 22, y = 128 } },
+    { x = 20, y = 200, w = 192, h = 26, label = { x = 22, y = 182 } },
+  },
+  check = { x = 18, y = 238, w = 26, h = 26, labelW = 160 },
+  check2 = { x = 18, y = 266, w = 26, h = 26, labelW = 160 },
+  resetButton = { x = 22, y = 304, w = 188, h = 22 },
+  themeButton = { x = 474, y = 29, w = 190, h = 26 },
+  count = { x = 22, y = 522, w = 188 },
+  credits = { x = 10, y = 558, w = 880 },
+  list = { x = 234, y = 68, w = 410, h = 472 },
   rowH = 20,
-  model = { x = 618, y = 72, w = 230, h = 170 },
-  name = { x = 618, y = 250, w = 230 },
-  text = { x = 618, y = 276, w = 230 },
-  mapButton = { x = 618, y = 458, w = 230, h = 24, label = true },
-  clearButton = { x = 618, y = 488, w = 230, h = 24, label = true },
+  model = { x = 662, y = 68, w = 222, h = 196 },
+  name = { x = 664, y = 274, w = 218 },
+  text = { x = 664, y = 300, w = 218 },
+  mapButton = { x = 664, y = 486, w = 218, h = 22, label = true },
+  clearButton = { x = 664, y = 514, w = 218, h = 22, label = true },
   colors = {
     text = { 1, 1, 1 }, header = { 1, 0.82, 0 }, dim = { 0.5, 0.5, 0.5 },
     title = { 1, 0.82, 0 }, tag = "7fb2ff",
-    hover = { 1, 1, 1, 0.12 }, selected = { 1, 0.82, 0, 0.18 },
-    control = { 0.25, 0.18, 0.1, 0.9 }, -- fill behind buttons and fields; nil when the art has them
+    hover = { 1, 1, 1, 0.10 }, selected = { 1, 0.82, 0, 0.20 },
+    -- Used only where a template is missing: fill behind fields and buttons.
+    control = { 0.12, 0.12, 0.12, 0.95 },
   },
 }
 

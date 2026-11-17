@@ -1,5 +1,7 @@
 # Beast Codex
 
+![Beast Codex](media/banner-en.png)
+
 **[English](#english)** · **[Português](#português)**
 
 ---
@@ -15,7 +17,7 @@ A hunter's codex for **World of Warcraft: Forever**. Every beast you can tame, a
 - **Filters:** family, zone, level range (1-10, 11-20, …), show untameable, only beasts with a map location, and a search box that matches names in your language and in English. One click clears them all.
 - **3D preview:** hover a beast to see its model turn; click to pin it.
 - **Map pins:** "Show on map" opens the world map on the beast's zone with a pin on every spawn point.
-- **Themes:** Hunter (default), Selva and Classic, switched from the selector next to the search box.
+- **Themes:** Hunter (default), Selva and Classic (the game's own interface), switched from the selector next to the search box.
 - **11 languages:** follows your game language. Beast, zone and ability names come from the game itself.
 
 ### Installation
@@ -51,6 +53,8 @@ Developed by Oleg · [assantech.com.br](https://assantech.com.br) · MIT license
 
 ## Português
 
+![Beast Codex](media/banner-pt.png)
+
 Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que você pode domar, e as que não pode, numa janela só: filtre, veja em 3D e marque os pontos de aparição no mapa.
 
 ### Funções
@@ -60,7 +64,7 @@ Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que v
 - **Filtros:** família, zona, faixa de nível (1-10, 11-20, …), mostrar indomáveis, só com localização no mapa, e uma busca que encontra o nome no seu idioma e em inglês. Um clique limpa todos.
 - **Prévia 3D:** passe o cursor numa fera para ver o modelo girando; clique para fixá-la.
 - **Pins no mapa:** "Mostrar no mapa" abre o mapa do mundo na zona da fera, com um pin em cada ponto de aparição.
-- **Temas:** Hunter (padrão), Selva e Classic, trocados pelo seletor ao lado da busca.
+- **Temas:** Hunter (padrão), Selva e Classic (a interface padrão do jogo), trocados pelo seletor ao lado da busca.
 - **11 idiomas:** segue o idioma do jogo. Nomes de feras, zonas e habilidades vêm do próprio jogo.
 
 ### Instalação

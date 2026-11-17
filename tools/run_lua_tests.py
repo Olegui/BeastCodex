@@ -23,7 +23,9 @@ mt.__index = function(_, key)
   -- the addon does arithmetic on these, so they must be numbers
   if key == "GetStringWidth" or key == "GetWidth" or key == "GetFrameLevel" then return function() return 50 end end
   if key == "IsShown" then return function() return false end end
-  return function() return new() end
+  -- A field the addon reads as a child (f.Inset, f.CloseButton) must also be
+  -- indexable, so every other field is a callable stub rather than a function.
+  return new()
 end
 mt.__call = function() return new() end
 local noop = new()

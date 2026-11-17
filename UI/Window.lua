@@ -49,9 +49,53 @@ function UI.Atlas(parent, layer, name)
   return t
 end
 
+-- A frame built from one of the client's templates when the theme copies the
+-- default interface (`blizzard`). Returns the frame and whether the template
+-- was used; a client without that template gets a plain frame instead.
+function UI.Make(kind, parent, template, name)
+  if template and ns.Skin.blizzard then
+    local ok, frame = pcall(CreateFrame, kind, name, parent, template)
+    if ok and frame then return frame, true end
+  end
+  return CreateFrame(kind, name, parent), false
+end
+
+-- The client's own drop-down and menu (the ones the default interface uses),
+-- or nil when the theme has its own look or the client lacks them.
+-- `items()` returns { {value, label}, ... }.
+function UI.NativeDropdown(parent, r, items, isSelected, onPick)
+  if not ns.Skin.blizzard then return nil end
+  local ok, dd = pcall(CreateFrame, "DropdownButton", nil, parent, "WowStyle1DropdownTemplate")
+  if not ok or not dd or not dd.SetupMenu then return nil end
+  UI.Place(dd, parent, r)
+  dd:SetupMenu(function(_, root)
+    if root.SetScrollMode then root:SetScrollMode(400) end
+    for _, item in ipairs(items()) do
+      local value = item[1]
+      root:CreateRadio(item[2], function() return isSelected(value) end, function() onPick(value) end)
+    end
+  end)
+  return dd
+end
+
 -- A clickable area. With `showLabel` it carries centered text; without it the
 -- art underneath is the button face and `tooltip` names it on hover.
 function UI.Button(parent, r, text, showLabel)
+  if showLabel and not r.face then
+    local b, native = UI.Make("Button", parent, "UIPanelButtonTemplate")
+    if native then
+      -- The client's red button: its own textures, highlight and disabled look.
+      UI.Place(b, parent, r)
+      b:SetText(text)
+      b.label, b.off, b.tooltip = b:GetFontString() or false, false, text
+      function b:SetActive(on, offText)
+        self:SetEnabled(on)
+        self:SetText(on and text or offText or text)
+      end
+      return b
+    end
+    b:Hide()
+  end
   local c = ns.Skin.colors
   local b = CreateFrame("Button", nil, parent)
   UI.Place(b, parent, r)
@@ -248,6 +292,18 @@ local function newFilter(parent, r, title, key, options, onChange)
   if r.label then
     UI.Text(parent, r.label, "GameFontNormalSmall", c.header):SetText(title)
   end
+  local native = UI.NativeDropdown(parent, r,
+    function()
+      local items = { { nil, L.ALL } }
+      for _, o in ipairs(options()) do items[#items + 1] = o end
+      return items
+    end,
+    function(value) return ns.db.filters[key] == value end,
+    function(value)
+      ns.db.filters[key] = value
+      onChange()
+    end)
+  if native then return native end
   local button = UI.Button(parent, r, L.ALL, true)
 
   local function refresh()
@@ -277,11 +333,19 @@ end
 
 local function newCheck(parent, r, text, checked, onChange)
   local c = ns.Skin.colors
-  local b = CreateFrame("Button", nil, parent)
+  local b, native = UI.Make("CheckButton", parent, "UICheckButtonTemplate")
+  if not native then
+    b:Hide()
+    b = CreateFrame("Button", nil, parent)
+  end
   UI.Place(b, parent, r)
-  local box = UI.Atlas(b, "BACKGROUND", "box")
-  local mark = UI.Atlas(b, "ARTWORK", "tick")
-  if box and mark then
+  local box = not native and UI.Atlas(b, "BACKGROUND", "box")
+  local mark = not native and UI.Atlas(b, "ARTWORK", "tick")
+  if native then
+    -- The client's checkbox draws its own box and tick.
+    b:SetChecked(checked)
+    mark = { SetShown = function() end }
+  elseif box and mark then
     box:SetAllPoints()
     mark:SetAllPoints()
   else
@@ -364,8 +428,12 @@ function Window:Create()
   -- The window is rebuilt when the theme changes, so each build gets its own name.
   Window.serial = (Window.serial or 0) + 1
   local frameName = "BeastCodexFrame" .. Window.serial
-  local f = CreateFrame("Frame", frameName, UIParent,
-    S.backdrop and BackdropTemplateMixin and "BackdropTemplate" or nil)
+  local f, native = UI.Make("Frame", UIParent, "ButtonFrameTemplate", frameName)
+  if S.blizzard and not native then
+    f:Hide()
+    f = CreateFrame("Frame", frameName .. "b", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    frameName = frameName .. "b"
+  end
   f:SetSize(S.W, S.H)
   f:SetPoint("CENTER")
   f:SetFrameStrata("HIGH")
@@ -386,91 +454,140 @@ function Window:Create()
     art:SetAllPoints()
     art:SetTexture(S.texture)
     art:SetTexCoord(0, S.imgW / S.texW, 0, S.imgH / S.texH)
-  elseif S.backdrop and f.SetBackdrop then
+  elseif native then
+    -- The client's window: title bar, border and close button come with it.
+    if ButtonFrameTemplate_HidePortrait then ButtonFrameTemplate_HidePortrait(f) end
+    if ButtonFrameTemplate_HideButtonBar then ButtonFrameTemplate_HideButtonBar(f) end
+    if f.Inset then f.Inset:Hide() end -- replaced by one panel per column below
+    if f.SetTitle then f:SetTitle(L.TITLE) elseif f.TitleText then f.TitleText:SetText(L.TITLE) end
+    if f.CloseButton then f.CloseButton:SetScript("OnClick", function() f:Hide() end) end
+  elseif S.blizzard and f.SetBackdrop then
+    -- Same look from older client textures, for a client without the template.
     f:SetBackdrop({
-      bgFile = "Interface\\Buttons\\WHITE8X8",
-      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-      edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 },
+      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+      tile = true, tileSize = 32, edgeSize = 32, insets = { left = 11, right = 12, top = 12, bottom = 11 },
     })
-    f:SetBackdropColor(0.09, 0.07, 0.05, 0.96)
-    f:SetBackdropBorderColor(0.6, 0.45, 0.25, 1)
+    UI.Text(f, { x = 20, y = 18 }, "GameFontNormal", c.title):SetText(L.TITLE)
+  end
+
+  -- Children go on `p`. With sunken panels (insets) it is a layer above them,
+  -- so that the window's own texts are not covered by the panels.
+  local p = f
+  if S.insets then
+    for _, r in ipairs(S.insets) do
+      local inset, nativeInset = UI.Make("Frame", f, "InsetFrameTemplate")
+      UI.Place(inset, f, r)
+      if not nativeInset then
+        local bg = inset:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetColorTexture(0, 0, 0, 0.35)
+      end
+    end
+    p = CreateFrame("Frame", nil, f)
+    p:SetAllPoints()
+    p:SetFrameLevel(f:GetFrameLevel() + 10)
   end
 
   if S.title then
-    UI.Text(f, S.title, "GameFontNormalLarge", c.title, S.title.center and "CENTER" or "LEFT"):SetText(L.TITLE)
+    UI.Text(p, S.title, "GameFontNormalLarge", c.title, S.title.center and "CENTER" or "LEFT"):SetText(L.TITLE)
   end
 
-  local close = UI.Button(f, S.close, CLOSE or "Close", S.close.text ~= nil)
-  if close.label then close.label:SetText(S.close.text) end
-  close:SetScript("OnClick", function() f:Hide() end)
+  if not (native and f.CloseButton) then
+    local r = S.blizzard and { x = S.W - 34, y = 8, w = 24, h = 24, text = "X" } or S.close
+    local close = UI.Button(p, r, CLOSE or "Close", r.text ~= nil)
+    if close.label then close.label:SetText(r.text) end
+    close:SetScript("OnClick", function() f:Hide() end)
+  end
 
-  local search = CreateFrame("EditBox", nil, f)
-  UI.Place(search, f, S.search)
-  search:SetFontObject("GameFontHighlightSmall")
-  local sc = S.search.textColor or c.text
-  search:SetTextColor(sc[1], sc[2], sc[3])
-  search:SetTextInsets(6, S.search.padRight or 6, 0, 0)
+  -- The client's search box brings its own magnifier, placeholder and clear
+  -- button; otherwise they are built here.
+  local search, nativeSearch = UI.Make("EditBox", p, "SearchBoxTemplate")
+  UI.Place(search, p, S.search)
   search:SetAutoFocus(false)
-  if c.control then
-    local bg = search:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
-  end
-  -- Placeholder: shown while the field is empty and not being typed in.
-  local hint = search:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-  hint:SetPoint("LEFT", 6, 0)
-  hint:SetPoint("RIGHT", -(S.search.padRight or 6), 0)
-  hint:SetJustifyH("LEFT")
-  hint:SetTextColor(c.dim[1], c.dim[2], c.dim[3])
-  hint:SetText(L.SEARCH_PLACEHOLDER)
-  UI.Flat(hint)
+  local hint, clear
+  if nativeSearch then
+    if search.Instructions then search.Instructions:SetText(L.SEARCH_PLACEHOLDER) end
+  else
+    search:SetFontObject("GameFontHighlightSmall")
+    local sc = S.search.textColor or c.text
+    search:SetTextColor(sc[1], sc[2], sc[3])
+    search:SetTextInsets(6, S.search.padRight or 6, 0, 0)
+    if c.control then
+      local bg = search:CreateTexture(nil, "BACKGROUND")
+      bg:SetAllPoints()
+      bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+    end
+    -- Placeholder: shown while the field is empty and not being typed in.
+    hint = search:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+    hint:SetPoint("LEFT", 6, 0)
+    hint:SetPoint("RIGHT", -(S.search.padRight or 6), 0)
+    hint:SetJustifyH("LEFT")
+    hint:SetTextColor(c.dim[1], c.dim[2], c.dim[3])
+    hint:SetText(L.SEARCH_PLACEHOLDER)
+    UI.Flat(hint)
 
-  -- With text in the field, an X over the magnifier clears it.
-  local clear = UI.Button(f, S.searchClear, L.CLEAR_SEARCH, S.searchClear.text ~= nil)
-  if clear.label then clear.label:SetText(S.searchClear.text) end
-  local cover = UI.Atlas(clear, "BACKGROUND", S.searchClear.face)
-  if cover then cover:SetAllPoints() end
-  clear:SetFrameLevel(search:GetFrameLevel() + 2)
-  clear:SetScript("OnClick", function()
-    search:SetText("")
-    search:ClearFocus()
-  end)
+    -- With text in the field, an X over the magnifier clears it.
+    local sr = S.blizzard and { x = S.search.x + S.search.w - 22, y = S.search.y, w = 22, h = S.search.h, text = "X" }
+      or S.searchClear
+    clear = UI.Button(p, sr, L.CLEAR_SEARCH, sr.text ~= nil)
+    if clear.label then clear.label:SetText(sr.text) end
+    local cover = UI.Atlas(clear, "BACKGROUND", sr.face)
+    if cover then cover:SetAllPoints() end
+    clear:SetFrameLevel(search:GetFrameLevel() + 2)
+    clear:SetScript("OnClick", function()
+      search:SetText("")
+      search:ClearFocus()
+    end)
+  end
 
   local function paintSearch()
+    if not hint then return end
     local empty = search:GetText() == ""
     hint:SetShown(empty and not search:HasFocus())
     clear:SetShown(not empty)
   end
-  search:SetScript("OnEditFocusGained", paintSearch)
-  search:SetScript("OnEditFocusLost", paintSearch)
+  -- Hooked, not set: the client's search box has its own handlers for these.
+  search:HookScript("OnEditFocusGained", paintSearch)
+  search:HookScript("OnEditFocusLost", paintSearch)
 
   search:SetText(ns.db.filters.search or "")
   search:SetScript("OnEscapePressed", search.ClearFocus)
   search:SetScript("OnEnterPressed", search.ClearFocus)
-  search:SetScript("OnTextChanged", function(self)
+  search:HookScript("OnTextChanged", function(self)
     paintSearch()
     ns.db.filters.search = self:GetText()
     Window:Refresh()
   end)
   paintSearch()
   if S.search.label then
-    local label = f:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local label = p:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     label:SetPoint("RIGHT", search, "LEFT", -8, 0)
     label:SetTextColor(c.header[1], c.header[2], c.header[3])
     label:SetText(L.SEARCH)
   end
 
   if S.themeButton then
-    local current = ns.Themes[ns.themeName]
-    local themeButton = UI.Button(f, S.themeButton, L.THEME .. ": " .. (current.label or ns.themeName), true)
-    themeButton:SetScript("OnClick", function(self)
+    local function themeItems()
       local items = {}
       for name, theme in pairs(ns.Themes) do items[#items + 1] = { name, theme.label or name } end
       table.sort(items, function(a, b) return a[2] < b[2] end)
-      UI.OpenMenu(self, items,
-        function(name) return name == ns.themeName end,
-        function(name) Window:SetTheme(name) end)
-    end)
+      return items
+    end
+    local isCurrent = function(name) return name == ns.themeName end
+    local pick = function(name) Window:SetTheme(name) end
+    local dd = UI.NativeDropdown(p, S.themeButton, themeItems, isCurrent, pick)
+    if dd then
+      local label = p:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+      label:SetPoint("RIGHT", dd, "LEFT", -6, 0)
+      label:SetText(L.THEME)
+    else
+      local current = ns.Themes[ns.themeName]
+      local themeButton = UI.Button(p, S.themeButton, L.THEME .. ": " .. (current.label or ns.themeName), true)
+      themeButton:SetScript("OnClick", function(self)
+        UI.OpenMenu(self, themeItems(), isCurrent, pick)
+      end)
+    end
   end
 
   local onChange = function() Window:Refresh() end
@@ -480,36 +597,36 @@ function Window:Create()
     { L.FILTER_LEVEL, "bucket", bucketOptions },
   }
   for i, spec in ipairs(specs) do
-    newFilter(f, S.filters[i], spec[1], spec[2], spec[3], onChange)
+    newFilter(p, S.filters[i], spec[1], spec[2], spec[3], onChange)
   end
 
-  newCheck(f, S.check, L.SHOW_UNTAMEABLE, ns.db.filters.showUntameable, function(on)
+  newCheck(p, S.check, L.SHOW_UNTAMEABLE, ns.db.filters.showUntameable, function(on)
     ns.db.filters.showUntameable = on
     Window:Refresh()
   end)
-  newCheck(f, S.check2, L.ONLY_LOCATED, ns.db.filters.onlyLocated, function(on)
+  newCheck(p, S.check2, L.ONLY_LOCATED, ns.db.filters.onlyLocated, function(on)
     ns.db.filters.onlyLocated = on
     Window:Refresh()
   end)
 
   -- Back to the defaults. The window is rebuilt from them, so every control
   -- (menus, checkboxes, search) shows the reset state at once.
-  local reset = UI.Button(f, S.resetButton, L.RESET_FILTERS, true)
+  local reset = UI.Button(p, S.resetButton, L.RESET_FILTERS, true)
   reset:SetScript("OnClick", function()
     ns.db.filters = ns.DefaultFilters()
     Window:SetTheme(ns.themeName)
   end)
 
-  self.count = S.count and UI.Text(f, S.count, "GameFontDisableSmall", c.dim) or nil
+  self.count = S.count and UI.Text(p, S.count, "GameFontDisableSmall", c.dim) or nil
 
   -- Footer credits, as in EAD Skill Preview: author, then the site in the accent color.
   if S.credits then
-    UI.Text(f, S.credits, "GameFontDisableSmall", c.dim, "CENTER")
+    UI.Text(p, S.credits, "GameFontDisableSmall", c.dim, "CENTER")
       :SetText(L.CREDITS:format(AUTHOR) .. "  •  |cff" .. c.tag .. SITE .. "|r")
   end
 
-  ns.List:Create(f, S.list)
-  ns.Detail:Create(f)
+  ns.List:Create(p, S.list)
+  ns.Detail:Create(p)
 
   self.frame = f
 end

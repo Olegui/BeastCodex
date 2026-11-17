@@ -251,16 +251,22 @@ function List:Create(parent, r)
   self.empty:SetTextColor(dim[1], dim[2], dim[3])
   ns.UI.Flat(self.empty)
 
-  local bar = CreateFrame("Slider", nil, holder)
+  -- The client's scroll bar (arrows, track and knob) when the theme copies the
+  -- default interface; its arrows sit outside the slider, hence the insets.
+  local bar, native = ns.UI.Make("Slider", holder, "UIPanelScrollBarTemplate")
+  local inset = native and 16 or 0
   bar:SetOrientation("VERTICAL")
-  bar:SetPoint("TOPRIGHT", 0, 0)
-  bar:SetPoint("BOTTOMRIGHT", 0, 0)
+  bar:SetPoint("TOPRIGHT", 0, -inset)
+  bar:SetPoint("BOTTOMRIGHT", 0, inset)
   bar:SetWidth(barW)
   bar:SetValueStep(1)
+  bar.scrollStep = 3 -- rows per arrow click
   if bar.SetObeyStepOnDrag then bar:SetObeyStepOnDrag(true) end
   local track = bar:CreateTexture(nil, "BACKGROUND")
   track:SetAllPoints()
-  if scroll then
+  if native then
+    track:SetColorTexture(0, 0, 0, 0.25)
+  elseif scroll then
     -- Slim flat bar in the theme's colors instead of the client's knob.
     track:SetColorTexture(scroll.track[1], scroll.track[2], scroll.track[3], scroll.track[4])
     local thumb = bar:CreateTexture(nil, "ARTWORK")

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- Classic theme now uses the game's own interface: window frame, panels, red buttons, checkboxes, search box, drop-down menus and scroll bar.
+
 ## 1.0.0
 
 First release.
