@@ -1,0 +1,3 @@
+local ADDON, ns = ...
+if GetLocale() ~= "koKR" then return end
+local L = ns.L

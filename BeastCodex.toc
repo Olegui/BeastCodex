@@ -1,0 +1,36 @@
+## Interface: 16001
+## Title: Beast Codex
+## Notes: A hunter's codex of every tameable beast: filters, 3D preview and map pins.
+## Author: Olegui
+## Version: 0.1.0
+## SavedVariables: BeastCodexDB
+## IconTexture: Interface\Icons\Ability_Hunter_BeastTaming
+
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0.lua
+Libs\HereBeDragons-2.0.lua
+Libs\HereBeDragons-Pins-2.0.lua
+
+Locales\enUS.lua
+Locales\deDE.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\frFR.lua
+Locales\itIT.lua
+Locales\koKR.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+
+Data\Creatures.lua
+Skin.lua
+Core.lua
+Filter.lua
+UI\Window.lua
+UI\List.lua
+UI\Detail.lua
+Map.lua
+SelfTest.lua

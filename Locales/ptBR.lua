@@ -1,0 +1,3 @@
+local ADDON, ns = ...
+if GetLocale() ~= "ptBR" then return end
+local L = ns.L

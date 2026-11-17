@@ -1,0 +1,3 @@
+local ADDON, ns = ...
+if GetLocale() ~= "esES" then return end
+local L = ns.L

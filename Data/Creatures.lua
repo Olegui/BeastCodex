@@ -1,0 +1,3 @@
+-- Placeholder until tools/build_data.py runs.
+local ADDON, ns = ...
+ns.Looks, ns.FamilyDiet, ns.MaxLevel, ns.Creatures = {}, {}, 60, {}
