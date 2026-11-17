@@ -1,14 +1,16 @@
-"""Generates each panel theme's row atlas, Art/<Theme>Rows.tga.
+"""Generates each panel theme's atlas, Art/<Theme>Rows.tga.
 
     .cache/venv/Scripts/python tools/make_rows.py
 
-Slots stacked vertically, 64 px apart, on a 1024x512 canvas:
+The atlas holds everything the addon draws itself inside a themed window.
+Slots are 64 px apart on a 1024x512 canvas:
   0 row box   1 hovered row   2 selected row (accent outline and glow)
-  3 tag pill, then the grey "unavailable" button face and the outline button face
+  3 tag pill, the "unavailable" map button face, the "clear pins" button face
   4 drop-down field with arrow, checkbox, tick
-The row slots are ROW_W x ROW_H, matching the on-screen row's proportions, so
-the rounded corners are not distorted when the texture is stretched to a row.
-The numbers here must match rowArt in Skin.lua.
+
+The button, field and checkbox pieces are cut from the theme's own art
+(art-src/<Theme>.png), so they carry the same surface, outline and wear as the
+search field and buttons painted there. Positions must match rowArt in Skin.lua.
 """
 import os
 
@@ -20,8 +22,23 @@ ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
 BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's slot
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
-FIELD_W, FIELD_H, BOX_X, TICK_X, BOX = 330, 56, 352, 416, 48
+FIELD_W, FIELD_H, BOX_X, TICK_X, BOX = 362, 56, 368, 432, 48
 SS = 4  # supersampling for smooth edges
+
+# Where the painted controls are in the art, in a 2000-px-wide frame. Both
+# panel themes share the layout, so these hold for every theme.
+SEARCH = (1413, 107, 1805, 166)       # the search field: the model for fields and outline buttons
+MAGNIFIER = (1740, 116, 1794, 158)    # painted inside it; removed for our own fields
+MAP_BUTTON = (1447, 960, 1851, 1022)  # the main button: the model for its unavailable state
+CLOSE = (1827, 107, 1887, 167)        # the round close button: the model for the checkbox
+
+# Per theme: row fill, row border, hover border, accent, pill fill, pill border.
+PALETTES = {
+    "Selva": ((38, 54, 46, 150), (86, 108, 96, 150), (150, 170, 158, 170), (243, 169, 65),
+              (122, 62, 28, 235), (214, 126, 60, 255)),
+    "Hunter": ((34, 20, 13, 135), (150, 112, 70, 140), (205, 168, 110, 180), (219, 176, 97),
+               (98, 62, 22, 235), (219, 176, 97, 255)),
+}
 
 
 def rounded(size, radius, fill, outline=None, width=0):
@@ -46,17 +63,44 @@ def stroke(size, points, color, width):
     return img.resize((w, h), Image.LANCZOS)
 
 
-# Per theme: row fill, row border, hover border, accent, pill fill, pill border, button well.
-PALETTES = {
-    "Selva": ((38, 54, 46, 150), (86, 108, 96, 150), (150, 170, 158, 170), (243, 169, 65),
-              (122, 62, 28, 235), (214, 126, 60, 255), (14, 22, 18, 200)),
-    "Hunter": ((34, 20, 13, 135), (150, 112, 70, 140), (205, 168, 110, 180), (219, 176, 97),
-               (98, 62, 22, 235), (219, 176, 97, 255), (30, 17, 11, 200)),
-}
+def cut(art, box, size, erase=None, erase_from=None):
+    """Cuts `box` (2000-wide frame) out of the art as a pill-shaped piece of `size`.
+
+    The piece gets a transparent surround, so only the control itself remains,
+    not the wood or leather it was painted on. `erase` blanks a sub-box with
+    the color found at `erase_from`.
+    """
+    k = art.width / 2000.0
+    src = art.convert("RGB")
+    if erase:
+        color = src.getpixel((int(erase_from[0] * k), int(erase_from[1] * k)))
+        ImageDraw.Draw(src).rectangle([int(v * k) for v in erase], fill=color)
+    piece = src.crop([int(round(v * k)) for v in box]).resize(size, Image.LANCZOS).convert("RGBA")
+    mask = rounded(size, min(size) // 2, (255, 255, 255, 255)).getchannel("A")
+    piece.putalpha(mask)
+    return piece
+
+
+def desaturate(piece, amount=0.88, level=105):
+    """Same surface and wear, most of the color taken out.
+
+    Brightness is brought down to about `level` on average, so a bright button
+    (Selva's amber) reads as unavailable rather than as a white one.
+    """
+    alpha = piece.getchannel("A")
+    rgb = piece.convert("RGB")
+    lum = rgb.convert("L")
+    mean = sum(lum.getdata()) / (lum.width * lum.height)
+    darken = min(1.0, level / mean)
+    grey = lum.point(lambda v: int(v * darken)).convert("RGB")
+    out = Image.blend(rgb, grey, amount).convert("RGBA")
+    out.putalpha(alpha)
+    return out
 
 
 def build(name):
-    fill, border, hover, accent, pill, pill_border, well = PALETTES[name]
+    fill, border, hover, accent, pill, pill_border = PALETTES[name]
+    art = Image.open(os.path.join(ROOT, "art-src", name + ".png"))
     atlas = Image.new("RGBA", (TEX_W, TEX_H), (0, 0, 0, 0))
     size = (ROW_W, ROW_H)
     atlas.alpha_composite(rounded(size, 9, fill, border, 2), (0, 0))
@@ -71,20 +115,23 @@ def build(name):
     atlas.alpha_composite(selected, (0, 2 * SLOT_H))
 
     atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, pill, pill_border, 2), (0, 3 * SLOT_H))
-    # Grey face laid over the map button while a creature has no location.
-    atlas.alpha_composite(rounded((BTN_W, BTN_H), BTN_H // 2, (96, 94, 90, 255), (140, 138, 132, 255), 2),
-                          (OFF_X, 3 * SLOT_H))
-    # Outline face of the "clear pins" button, drawn only while pins exist.
-    atlas.alpha_composite(rounded((BTN_W, BTN_H), BTN_H // 2, well, accent + (255,), 2), (FACE_X, 3 * SLOT_H))
 
-    # Controls drawn by the addon, made to look like the ones painted in the art:
-    # a recessed field with a thin accent outline and a small arrow, and a checkbox.
-    field = rounded((FIELD_W, FIELD_H), 12, well, accent + (230,), 2)
-    field.alpha_composite(stroke((FIELD_W, FIELD_H), [(FIELD_W - 40, 23), (FIELD_W - 31, 32), (FIELD_W - 22, 23)],
+    inside = ((SEARCH[0] + SEARCH[2]) // 2, (SEARCH[1] + SEARCH[3]) // 2)  # plain interior of the search field
+    # The map button while a creature has no location: the painted button itself, drained of color.
+    atlas.alpha_composite(desaturate(cut(art, MAP_BUTTON, (BTN_W, BTN_H))), (OFF_X, 3 * SLOT_H))
+    # "Clear pins": the search field's look, without its magnifier.
+    atlas.alpha_composite(cut(art, SEARCH, (BTN_W, BTN_H), MAGNIFIER, inside), (FACE_X, 3 * SLOT_H))
+
+    # Drop-down field: the search field again, with a small arrow instead of the magnifier.
+    field = cut(art, SEARCH, (FIELD_W, FIELD_H), MAGNIFIER, inside)
+    field.alpha_composite(stroke((FIELD_W, FIELD_H), [(FIELD_W - 42, 24), (FIELD_W - 33, 33), (FIELD_W - 24, 24)],
                                  accent + (255,), 2.4))
     atlas.alpha_composite(field, (0, CONTROLS_Y))
-    atlas.alpha_composite(rounded((BOX, BOX), 10, well, accent + (230,), 3), (BOX_X, CONTROLS_Y))
-    atlas.alpha_composite(stroke((BOX, BOX), [(12, 25), (21, 34), (36, 14)], accent + (255,), 5), (TICK_X, CONTROLS_Y))
+    # Checkbox: the round close button with its X removed.
+    cx, cy = (CLOSE[0] + CLOSE[2]) / 2, (CLOSE[1] + CLOSE[3]) / 2
+    box = cut(art, CLOSE, (BOX, BOX), (cx - 13, cy - 13, cx + 13, cy + 13), (cx - 16, cy))
+    atlas.alpha_composite(box, (BOX_X, CONTROLS_Y))
+    atlas.alpha_composite(stroke((BOX, BOX), [(13, 25), (21, 33), (35, 15)], accent + (255,), 5), (TICK_X, CONTROLS_Y))
     return atlas
 
 
@@ -92,5 +139,4 @@ if __name__ == "__main__":
     for name in PALETTES:
         out = os.path.join(ROOT, "Art", name + "Rows.tga")
         build(name).save(out, format="TGA", compression=None)
-        print("wrote %s (%dx%d, slots every %d px, row %dx%d, pill %dx%d)" % (
-            out, TEX_W, TEX_H, SLOT_H, ROW_W, ROW_H, PILL_W, PILL_H))
+        print("wrote %s (%dx%d)" % (out, TEX_W, TEX_H))

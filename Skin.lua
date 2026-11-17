@@ -88,14 +88,14 @@ local function panels(look)
       faces = {
         off = { 128, 192, 390, 60 },     -- grey face over the map button
         outline = { 528, 192, 390, 60 }, -- "clear pins" button
-        field = { 0, 256, 330, 56 },     -- drop-down field with its arrow, like the painted ones
-        box = { 352, 256, 48, 48 },      -- checkbox
-        tick = { 416, 256, 48, 48 },     -- its tick
+        field = { 0, 256, 362, 56 },     -- drop-down field with its arrow, cut from the search field
+        box = { 368, 256, 48, 48 },      -- checkbox, cut from the round close button
+        tick = { 432, 256, 48, 48 },     -- its tick
       },
     },
     label = look.label,
     -- Same height and look as the search field it sits beside.
-    themeButton = { x = 1096, y = 109, w = 302, h = 56, face = "field", padRight = 24 },
+    themeButton = { x = 1030, y = 108, w = 368, h = 57, face = "field", padRight = 24 },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },
     search = { x = 1436, y = 119, w = 300, h = 38 },
     close = { x = 1832, y = 111, w = 50, h = 50 },

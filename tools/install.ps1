@@ -11,7 +11,7 @@ if ($Probe) {
 } else {
   $src = $repo; $dst = Join-Path $addons 'BeastCodex'
   robocopy $src $dst /MIR /NJH /NJS /NDL /NP `
-    /XD .git .cache .superpowers docs tools Probe `
+    /XD .git .cache .superpowers docs tools Probe art-src `
     /XF .gitignore .pkgmeta | Out-Host
 }
 # robocopy: 0-7 are success codes, 8+ are failures (e.g. folder not writable)
