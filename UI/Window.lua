@@ -65,7 +65,9 @@ function UI.Button(parent, r, text, showLabel)
   if face then face:SetAllPoints() end
   b.off = UI.Atlas(b, "BORDER", r.offFace) or false
   if b.off then
-    b.off:SetAllPoints()
+    local pad = ns.Skin.rowArt.offPad or 0
+    b.off:SetPoint("TOPLEFT", -pad, pad)
+    b.off:SetPoint("BOTTOMRIGHT", pad, -pad)
     b.off:Hide()
   end
   local hl = b:CreateTexture(nil, "HIGHLIGHT")

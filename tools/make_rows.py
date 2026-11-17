@@ -21,6 +21,7 @@ TEX_W, TEX_H, SLOT_H = 1024, 512, 64
 ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
 BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's slot
+OFF_PAD, OFF_W = 6, 338                          # the unavailable face is cut 6 units larger all round
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
 FIELD_W, FIELD_H, BOX_X, TICK_X, BOX = 362, 56, 368, 432, 48
 SS = 4  # supersampling for smooth edges
@@ -81,6 +82,30 @@ def cut(art, box, size, erase=None, erase_from=None):
     return piece
 
 
+def cut_shape(art, box, pad, size):
+    """Cuts a painted control with its real outline, found in the art itself.
+
+    A pill mask misses the corners of a button that is not a perfect pill, and
+    its own rim then shows around the piece. Here the mask is every pixel
+    brighter than halfway between the surface around the control and the
+    control's middle, closed over cracks and grown a little, so the whole
+    control is covered, rim included. The cut is `pad` units larger than `box`.
+    """
+    k = art.width / 2000.0
+    big = (box[0] - pad, box[1] - pad, box[2] + pad, box[3] + pad)
+    region = art.convert("RGB").crop([int(round(v * k)) for v in big])
+    lum = region.convert("L")
+    around = lum.getpixel((2, 2))
+    middle = lum.getpixel((lum.width // 2, lum.height // 2))
+    threshold = (around + middle) / 2
+    mask = lum.point(lambda v: 255 if v > threshold else 0)
+    mask = mask.filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.MinFilter(15))  # close cracks and dark wear
+    mask = mask.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.GaussianBlur(1.5))  # take the rim too
+    piece = region.convert("RGBA")
+    piece.putalpha(mask)
+    return piece.resize(size, Image.LANCZOS)
+
+
 def desaturate(piece, amount=0.88, level=105):
     """Same surface and wear, most of the color taken out.
 
@@ -118,7 +143,7 @@ def build(name):
 
     inside = ((SEARCH[0] + SEARCH[2]) // 2, (SEARCH[1] + SEARCH[3]) // 2)  # plain interior of the search field
     # The map button while a creature has no location: the painted button itself, drained of color.
-    atlas.alpha_composite(desaturate(cut(art, MAP_BUTTON, (BTN_W, BTN_H))), (OFF_X, 3 * SLOT_H))
+    atlas.alpha_composite(desaturate(cut_shape(art, MAP_BUTTON, OFF_PAD, (OFF_W, BTN_H))), (OFF_X, 3 * SLOT_H))
     # "Clear pins": the search field's look, without its magnifier.
     atlas.alpha_composite(cut(art, SEARCH, (BTN_W, BTN_H), MAGNIFIER, inside), (FACE_X, 3 * SLOT_H))
 

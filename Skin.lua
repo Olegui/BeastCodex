@@ -85,8 +85,9 @@ local function panels(look)
       texture = ART .. look.art .. "Rows",
       texW = 1024, texH = 512, slotH = 64, rowW = 800, rowH = 44, pillW = 96, pillH = 30,
       -- Controls the addon draws itself, as { x, y, w, h } in the atlas.
+      offPad = 2.9, -- window units the grey face reaches beyond the button, to cover its rim
       faces = {
-        off = { 128, 192, 390, 60 },     -- grey face over the map button
+        off = { 128, 192, 338, 60 },     -- grey face over the map button, rim included
         outline = { 528, 192, 390, 60 }, -- "clear pins" button
         field = { 0, 256, 362, 56 },     -- drop-down field with its arrow, cut from the search field
         box = { 368, 256, 48, 48 },      -- checkbox, cut from the round close button
