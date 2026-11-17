@@ -31,6 +31,18 @@ function Filter.Zones()
   return sortedKeys(set)
 end
 
+local CLS_KEY = {
+  rare = "RARE", elite = "ELITE", rareelite = "RAREELITE",
+  spawned = "SPAWNED", spawnedelite = "SPAWNEDELITE",
+}
+
+-- Translated label for a creature's classification, or nil when it has none
+-- (or one this version does not know: better no tag than an error).
+function ns.ClsLabel(cls)
+  local key = cls and CLS_KEY[cls]
+  return key and L[key] or nil
+end
+
 function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
@@ -137,6 +149,12 @@ test("search is case-insensitive, substring, and treats pattern characters liter
   assert(ids(apply({ search = "(" })) == "5")
   assert(ids(apply({ search = "%" })) == "")
   assert(ids(apply({ search = "VILE" })) == "3,4")
+end)
+
+test("classification labels: known ones translate, unknown ones give no label", function()
+  assert(ns.ClsLabel("rare") == L.RARE and ns.ClsLabel("rareelite") == L.RAREELITE)
+  assert(ns.ClsLabel("spawned") == L.SPAWNED and ns.ClsLabel("spawnedelite") == L.SPAWNEDELITE)
+  assert(ns.ClsLabel("bogus") == nil and ns.ClsLabel(nil) == nil)
 end)
 
 test("buckets cover the data's level range", function()

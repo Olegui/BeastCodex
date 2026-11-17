@@ -6,9 +6,18 @@ ns.Map = Map
 
 local pool, used, current = {}, 0, nil
 
--- True when there is somewhere to put pins: a known map and at least one x,y pair.
+-- Whether the client knows this uiMapID. Asking the world map to show an
+-- unknown ID breaks the map for the rest of the session, so check first.
+function Map.IsValidMap(id)
+  if not (C_Map and C_Map.GetMapInfo) then return false end
+  local ok, info = pcall(C_Map.GetMapInfo, id)
+  return ok and info ~= nil
+end
+
+-- True when there is somewhere to put pins: a map the client knows and at least one x,y pair.
 function Map.CanShow(c)
   return c ~= nil and c.map ~= nil and type(c.coords) == "table" and #c.coords >= 2
+    and Map.IsValidMap(c.map)
 end
 
 function Map.HasPins()
@@ -50,8 +59,9 @@ end
 -- Puts a pin on every spawn point and opens the world map there.
 -- Returns false when the creature has no usable location.
 function Map.Show(c)
+  if not Map.CanShow(c) then return false end
   local lib = pinsLib()
-  if not lib or not Map.CanShow(c) then return false end
+  if not lib then return false end
   Map.Clear()
   current = c
   for i = 1, #c.coords - 1, 2 do
@@ -73,6 +83,16 @@ table.insert(ns.tests, { "map: CanShow needs a map and at least one coordinate p
   assert(Map.CanShow({ map = 1444 }) == false)
   assert(Map.CanShow(nil) == false)
   assert(Map.CanShow({ map = 1444, coords = { 1, 2 } }) == true)
+end })
+
+table.insert(ns.tests, { "map: a map ID the client does not know cannot be shown", function()
+  local old = Map.IsValidMap
+  Map.IsValidMap = function(id) return id ~= 16593 end
+  local bad = Map.CanShow({ map = 16593, coords = { 1, 2 } })
+  local shown = Map.Show({ map = 16593, coords = { 1, 2 } })
+  local good = Map.CanShow({ map = 1444, coords = { 1, 2 } })
+  Map.IsValidMap = old
+  assert(bad == false and shown == false and good == true)
 end })
 
 table.insert(ns.tests, { "map: Show refuses a creature without a location", function()

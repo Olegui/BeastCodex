@@ -8,7 +8,6 @@ ns.List = List
 -- Filled by UI/Detail.lua; called only when set.
 List.onEnter, List.onLeave, List.onClick = nil, nil, nil
 
-local CLS_TEXT = { rare = "RARE", elite = "ELITE", rareelite = "RAREELITE" }
 local zoneCache = {}
 
 -- The game's own (localized) map name when the map is known, else the English zone.
@@ -47,7 +46,8 @@ local function paint(row, data)
     return
   end
   row:EnableMouse(true)
-  local tag = c.cls and (" |cff7fb2ff" .. L[CLS_TEXT[c.cls]] .. "|r") or ""
+  local cls = ns.ClsLabel(c.cls)
+  local tag = cls and (" |cff7fb2ff" .. cls .. "|r") or ""
   row.name:SetText(c.name .. tag)
   row.name:SetPoint("LEFT", 22, 0)
   row.level:SetText(ns.LevelText(c))

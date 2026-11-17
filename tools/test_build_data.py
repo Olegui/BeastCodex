@@ -61,6 +61,18 @@ class MergeTest(unittest.TestCase):
         out = build_data.merge({30: HM_SPIDER}, [PET_SNARLER, PET_NEW], {})
         self.assertEqual([c["id"] for c in out], [777, 30, 5356])   # raptor, spider, wolf
 
+    def test_huntmaster_map_equal_to_area_is_not_a_map(self):
+        # Huntmaster puts the area ID where the uiMapID should be for the new Forever zone.
+        hm = {1: dict(HM_SPIDER, id=1, map=16593, area=16593)}
+        c = build_data.merge(hm, [], {})[0]
+        self.assertEqual((c["map"], c["coords"]), (None, []))
+
+    def test_validate_rejects_unknown_classification(self):
+        good = build_data.merge({5356: HM_SNARLER}, [PET_SNARLER], {})
+        build_data.validate([dict(good[0], cls="spawnedelite")])
+        with self.assertRaises(ValueError):
+            build_data.validate([dict(good[0], cls="boss")])
+
     def test_validate_rejects_bad_data(self):
         good = build_data.merge({5356: HM_SNARLER}, [PET_SNARLER], {})
         build_data.validate(good)

@@ -5,13 +5,12 @@ local L = ns.L
 local Detail = { pinned = nil }
 ns.Detail = Detail
 
-local CLS_TEXT = { rare = "RARE", elite = "ELITE", rareelite = "RAREELITE" }
-
 -- The text lines for a creature. Kept apart from the frames so it can be checked.
 function Detail.Lines(c)
   local lines = {}
   local head = ns.Filter.FamilyName(c.family) .. ", " .. L.LEVEL_FMT:format(ns.LevelText(c))
-  if c.cls then head = head .. ", " .. L[CLS_TEXT[c.cls]] end
+  local cls = ns.ClsLabel(c.cls)
+  if cls then head = head .. ", " .. cls end
   lines[#lines + 1] = head
   local zone = ns.ZoneLabel(c)
   if zone ~= "" then lines[#lines + 1] = zone end
@@ -160,4 +159,15 @@ table.insert(ns.tests, { "detail: missing fields produce no lines and no error",
   ns.FamilyDiet = old
   assert(#lines == 3, #lines)
   assert(lines[1] == "Bat, Level ??" and lines[2]:find(L.UNTAMEABLE, 1, true) and lines[3]:find("Friendly", 1, true))
+end })
+
+table.insert(ns.tests, { "data: every creature formats without error", function()
+  for _, c in ipairs(ns.Creatures) do
+    local ok, err = pcall(function()
+      assert(type(Detail.Lines(c)[1]) == "string" and type(ns.LevelText(c)) == "string")
+      assert(c.cls == nil or ns.ClsLabel(c.cls) ~= nil, "unknown classification " .. tostring(c.cls))
+      assert(ns.Looks[c.look or ""] ~= nil or c.look == nil, "unknown look")
+    end)
+    if not ok then error(("creature %s (%s): %s"):format(tostring(c.id), tostring(c.name), tostring(err)), 0) end
+  end
 end })

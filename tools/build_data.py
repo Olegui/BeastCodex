@@ -10,6 +10,8 @@ from tools import huntmaster, petopia, wowhead
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HUNTMASTER_FILE = os.path.join(ROOT, ".cache", "sources", "Huntmaster", "Data", "TameableNPCs.lua")
 FAMILIES = set(huntmaster.FAMILY_SLUG.values())
+# Must match CLS_KEY in Filter.lua.
+CLASSIFICATIONS = {None, "rare", "elite", "rareelite", "spawned", "spawnedelite"}
 
 
 def merge(hm, pet_creatures, wh):
@@ -19,6 +21,9 @@ def merge(hm, pet_creatures, wh):
         pet.setdefault(row["id"], row)  # an NPC listed under two looks keeps the first
 
     # Huntmaster knows area -> uiMapID; creatures in both sources give zone name -> uiMapID.
+    # Huntmaster stores the area ID in place of the uiMapID for zones it has no map ID
+    # for (the new Forever zone); such a value is not a map.
+    hm = {i: dict(r, map=None if r["map"] == r["area"] else r["map"]) for i, r in hm.items()}
     area_map = {r["area"]: r["map"] for r in hm.values() if r["map"] and r["area"]}
     zone_map = {pet[i]["zone"]: r["map"] for i, r in hm.items()
                 if r["map"] and i in pet and pet[i]["zone"]}
@@ -59,6 +64,8 @@ def validate(creatures):
         if c["id"] in seen:
             raise ValueError("duplicate NPC id %d" % c["id"])
         seen.add(c["id"])
+        if c["cls"] not in CLASSIFICATIONS:
+            raise ValueError("NPC %d has unknown classification %r" % (c["id"], c["cls"]))
         if c["family"] not in FAMILIES:
             raise ValueError("NPC %d has unknown family %r" % (c["id"], c["family"]))
         if len(c["coords"]) % 2 or any(not 0 <= v <= 100 for v in c["coords"]):

@@ -13,6 +13,7 @@ ns.L = setmetatable({
   COUNT_FMT = "%d of %d beasts",
   NO_RESULTS = "No beasts match these filters.",
   RARE = "Rare", ELITE = "Elite", RAREELITE = "Rare Elite",
+  SPAWNED = "Spawned", SPAWNEDELITE = "Spawned Elite",
   UNTAMEABLE = "Cannot be tamed",
   HOVER_HINT = "Hover a beast to preview it. Click to pin it.",
   LEVEL_FMT = "Level %s",

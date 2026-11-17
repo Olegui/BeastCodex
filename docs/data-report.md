@@ -2,8 +2,8 @@
 
 - Criaturas: 704 (domáveis 625, indomáveis 79)
 - Só no Huntmaster: 6; só no Petopia: 370; nas duas: 328
-- Sem coordenadas: 105
-- Sem mapa: 101
+- Sem coordenadas: 126
+- Sem mapa: 122
 - Sem nível: 7
 
 ## Por família
@@ -92,9 +92,19 @@
 - 14965 Frenzied Bloodseeker Bat (Zul'Gurub (Raid))
 - 3866 Vile Bat (Shadowfang Keep (Dungeon))
 - 4425 Blind Hunter (Razorfen Kraul (Dungeon))
+- 250927 Shadowgale Ursera (Ruins of Bana'aethal, Zephras Isle)
+- 251115 Urs'anah (Thendal Cave, Zephras Isle)
+- 250928 Highlands Ursera (Zephras Isle)
+- 250937 Ursera Scavenger (Thendal Cave, Zephras Isle)
+- 259388 Mystmane (Shadowgale Forest, Zephras Isle)
+- 250926 Scrawny Ursera (Thendal Grove, Zephras Isle)
+- 256092 Shadowgale Shriekling (Shadowgale Forest, Zephras Isle)
+- 253282 Shriekling Fledgling (Shriekling Den, Zephras Isle)
+- 253283 Shriekling Matriarch (Shriekling Den, Zephras Isle)
 - 4512 Rotting Agam'ar (Razorfen Kraul (Dungeon))
 - 4511 Agam'ar (Razorfen Kraul (Dungeon))
 - 4514 Raging Agam'ar (Razorfen Kraul (Dungeon))
+- 251245 Prideclaw (Shen'dar Highlands, Zephras Isle)
 - 263315 Ombassa (Riverglades)
 - 11365 Zulian Panther (Zul'Gurub (Raid))
 - 15101 Zulian Prowler (Zul'Gurub (Raid))
@@ -103,12 +113,18 @@
 - 4823 Barbed Crustacean (Moonshrine Ruins, Blackfathom Deeps (Dungeon))
 - 4821 Skittering Crustacean (Blackfathom Deeps (Dungeon))
 - 4822 Snapping Crustacean (The Pool of Ask'ar, Blackfathom Deeps (Dungeon))
+- 254588 Windsong Crawler (Gustberry Lowlands, Zephras Isle)
 - 5053 Deviate Crocolisk (Wailing Caverns (Dungeon))
 - 260797 Elder Crocolisk (Excavation Site: Wetlands (Dungeon))
 - 260796 Marsh Crocolisk (Excavation Site: Wetlands (Dungeon))
 - 260798 Young Crocolisk (Excavation Site: Wetlands (Dungeon))
 - 15043 Zulian Crocolisk (Zul'Gurub (Raid))
 - 274715 Marsh Skulker (Excavation Site: Wetlands (Dungeon))
+- 254589 Vulgara the Insatiable (Shen'dar Highlands, Zephras Isle)
+- 250873 Juvenile Vuldren (Zephras Isle)
+- 250868 Vuldren (Shen'dar Highlands, Zephras Isle)
+- 250874 Vuldren Alpha (Gustberry Lowlands, Zephras Isle)
+- 255887 Slydris (Zephras Isle)
 - 4304 Scarlet Tracking Hound (Scarlet Monastery (Dungeon))
 - 260800 Thicket Lurker (Excavation Site: Wetlands (Dungeon))
 - 3637 Deviate Guardian (Wailing Caverns (Dungeon))
@@ -130,6 +146,9 @@
 - 15041 Spawn of Mar'li (Zul'Gurub (Raid))
 - 8933 Cave Creeper (Blackrock Depths (Dungeon))
 - 250488 Tarantula (Ruins of Lordaeron (Dungeon))
+- 256492 Fernfeather (Zephras Isle)
+- 251707 Ornery Galestrider (Gustberry Lowlands, Zephras Isle)
+- 251661 Galestrider (Shen'dar Highlands, Zephras Isle)
 - 272392 Giant Moonstrider (Moonglade)
 - 272391 Moonstrider (Moonglade)
 - 4824 Aku'mai Fisher (The Pool of Ask'ar, Blackfathom Deeps (Dungeon))
