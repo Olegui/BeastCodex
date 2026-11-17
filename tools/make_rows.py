@@ -115,7 +115,7 @@ def desaturate(piece, amount=0.88, level=105):
     alpha = piece.getchannel("A")
     rgb = piece.convert("RGB")
     lum = rgb.convert("L")
-    mean = sum(lum.getdata()) / (lum.width * lum.height)
+    mean = sum(lum.get_flattened_data()) / (lum.width * lum.height)
     darken = min(1.0, level / mean)
     grey = lum.point(lambda v: int(v * darken)).convert("RGB")
     out = Image.blend(rgb, grey, amount).convert("RGBA")
