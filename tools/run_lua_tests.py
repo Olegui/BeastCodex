@@ -52,6 +52,8 @@ SMOKE = """function(ns)
             ns.Window:Refresh()
             ns.Detail:Pin(ns.Creatures[1])
             ns.Detail:Preview(nil)
+            ns.preloadStarted = nil
+            ns.Preload()
             local picked
             local items = { { nil, "All" } }
             for i = 1, 30 do items[#items + 1] = { i, "Item " .. i } end

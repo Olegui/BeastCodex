@@ -29,12 +29,50 @@ function Detail.Lines(c)
   return lines
 end
 
+local function hasModel(model)
+  local ok, display = pcall(function() return model.GetDisplayInfo and model:GetDisplayInfo() end)
+  return ok and display ~= nil and display ~= 0
+end
+
+-- The client fetches a creature's appearance the first time it is asked for,
+-- so the first request can come back empty (measured with /beastcodex
+-- modelscan: every creature has a model once asked twice). Ask again shortly
+-- after if nothing showed.
 local function showModel(model, c)
-  -- A creature the client has not cached may fail to load: the panel still shows its text.
-  pcall(function()
-    model:ClearModel()
-    model:SetCreature(c.id)
-    model:SetFacing(0.5)
+  local function request()
+    pcall(function()
+      model:ClearModel()
+      model:SetCreature(c.id)
+      model:SetFacing(0.5)
+    end)
+  end
+  request()
+  for _, delay in ipairs({ 0.4, 1.2 }) do
+    C_Timer.After(delay, function()
+      if Detail.shown == c and not hasModel(model) then request() end
+    end)
+  end
+end
+
+-- Asks the client for every creature's appearance once per session, a few per
+-- frame, so models are ready by the time a row is hovered.
+function ns.Preload()
+  if ns.preloadStarted then return end
+  ns.preloadStarted = true
+  local warm = CreateFrame("PlayerModel", nil, UIParent)
+  warm:SetSize(32, 32)
+  warm:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
+  warm:SetAlpha(0.02) -- nearly invisible, but shown so the client really loads it
+  local i = 0
+  C_Timer.NewTicker(0.04, function(ticker)
+    i = i + 1
+    local c = ns.Creatures[i]
+    if not c then
+      ticker:Cancel()
+      warm:Hide()
+      return
+    end
+    pcall(function() warm:ClearModel() warm:SetCreature(c.id) end)
   end)
 end
 

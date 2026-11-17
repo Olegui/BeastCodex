@@ -408,5 +408,6 @@ function Window:Toggle()
   else
     self:Refresh()
     self.frame:Show()
+    ns.Preload()
   end
 end
