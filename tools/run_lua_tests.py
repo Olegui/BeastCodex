@@ -20,7 +20,9 @@ STUB = r"""
 local mt = {}
 local function new() return setmetatable({}, mt) end
 mt.__index = function(_, key)
-  if key == "GetStringWidth" then return function() return 50 end end -- code does arithmetic on it
+  -- the addon does arithmetic on these, so they must be numbers
+  if key == "GetStringWidth" or key == "GetWidth" or key == "GetFrameLevel" then return function() return 50 end end
+  if key == "IsShown" then return function() return false end end
   return function() return new() end
 end
 mt.__call = function() return new() end
@@ -50,6 +52,11 @@ SMOKE = """function(ns)
             ns.Window:Refresh()
             ns.Detail:Pin(ns.Creatures[1])
             ns.Detail:Preview(nil)
+            local picked
+            local items = { { nil, "All" } }
+            for i = 1, 30 do items[#items + 1] = { i, "Item " .. i } end
+            ns.UI.OpenMenu(CreateFrame("Button"), items,
+                function(v) return v == 20 end, function(v) picked = v end)
         end)
         if not ok then problems[#problems + 1] = "window under theme " .. name .. ": " .. tostring(err) end
     end

@@ -41,10 +41,13 @@ function UI.Button(parent, r, text, showLabel)
   hl:SetAllPoints()
   hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   if showLabel then
-    b.label = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    b.label = b:CreateFontString(nil, "ARTWORK", r.font or "GameFontHighlightSmall")
     b.label:SetPoint("LEFT", 6, 0)
     b.label:SetPoint("RIGHT", -6, 0)
     b.label:SetWordWrap(false)
+    -- The client fonts carry a dark drop shadow; under dark text on a light
+    -- button it reads as blur, so such labels go without it.
+    if r.textColor then b.label:SetShadowOffset(0, 0) end
     local tc = r.textColor or c.text
     b.label:SetTextColor(tc[1], tc[2], tc[3])
     b.label:SetText(text)
@@ -58,14 +61,142 @@ function UI.Button(parent, r, text, showLabel)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
   b.tooltip = text
+  -- An inactive button keeps full opacity (fading text looks smeared) and
+  -- changes to a muted color instead.
   function b:SetActive(on)
     self:EnableMouse(on)
-    self:SetAlpha((on or not showLabel) and 1 or 0.4)
+    if self.label then
+      local tc = on and (r.textColor or c.text) or (r.dimColor or c.dim)
+      self.label:SetTextColor(tc[1], tc[2], tc[3])
+    end
   end
   return b
 end
 
--- A filter button that opens a scrolling radio menu. `options()` returns
+-- The addon's own drop-down: a themed popup under `owner` listing `items`
+-- ({ {value, label}, ... }), scrolled with the mouse wheel. One popup exists
+-- per window; opening it again for the same owner closes it.
+local MENU_ROW, MENU_MAX = 20, 12
+
+local function buildMenu(parent)
+  local c = ns.Skin.colors
+  local bgc = c.menu or { 0.07, 0.06, 0.05, 0.98 }
+  local line = c.menuBorder or { c.header[1], c.header[2], c.header[3], 0.6 }
+
+  -- Invisible full-screen button behind the popup: a click anywhere else closes it.
+  local catcher = CreateFrame("Button", nil, UIParent)
+  catcher:SetAllPoints(UIParent)
+  catcher:SetFrameStrata("DIALOG")
+  catcher:Hide()
+
+  local m = CreateFrame("Frame", nil, parent)
+  m:SetFrameStrata("DIALOG")
+  m:SetFrameLevel(catcher:GetFrameLevel() + 10)
+  m:SetClampedToScreen(true)
+  m:EnableMouse(true)
+  m:Hide()
+  m.catcher = catcher
+  catcher:SetScript("OnClick", function() m:Hide() end)
+  m:SetScript("OnHide", function() catcher:Hide() end)
+  parent:HookScript("OnHide", function() m:Hide() end)
+
+  local bg = m:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(bgc[1], bgc[2], bgc[3], bgc[4])
+  for _, edge in ipairs({ { "TOPLEFT", "TOPRIGHT", nil, 1 }, { "BOTTOMLEFT", "BOTTOMRIGHT", nil, 1 },
+                          { "TOPLEFT", "BOTTOMLEFT", 1, nil }, { "TOPRIGHT", "BOTTOMRIGHT", 1, nil } }) do
+    local t = m:CreateTexture(nil, "BORDER")
+    t:SetColorTexture(line[1], line[2], line[3], line[4])
+    t:SetPoint(edge[1])
+    t:SetPoint(edge[2])
+    if edge[3] then t:SetWidth(edge[3]) else t:SetHeight(edge[4]) end
+  end
+
+  m.rows = {}
+  for i = 1, MENU_MAX do
+    local row = CreateFrame("Button", nil, m)
+    row:SetHeight(MENU_ROW)
+    row:SetPoint("TOPLEFT", 1, -(i - 1) * MENU_ROW - 3)
+    row:SetPoint("TOPRIGHT", -7, -(i - 1) * MENU_ROW - 3)
+    local hl = row:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(c.selected[1], c.selected[2], c.selected[3], c.selected[4])
+    row.text = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    row.text:SetPoint("LEFT", 10, 0)
+    row.text:SetPoint("RIGHT", -4, 0)
+    row.text:SetJustifyH("LEFT")
+    row.text:SetWordWrap(false)
+    row:SetScript("OnClick", function(self)
+      m:Hide()
+      m.onPick(self.value)
+    end)
+    m.rows[i] = row
+  end
+
+  m.thumb = m:CreateTexture(nil, "ARTWORK")
+  m.thumb:SetColorTexture(c.header[1], c.header[2], c.header[3], 0.75)
+  m.thumb:SetWidth(3)
+
+  function m:Paint()
+    local shown = math.min(#self.items, MENU_MAX)
+    local maxOffset = #self.items - shown
+    self.offset = math.min(math.max(0, self.offset), maxOffset)
+    for i, row in ipairs(self.rows) do
+      local item = self.items[i + self.offset]
+      if item and i <= shown then
+        row.value = item[1]
+        row.text:SetText(item[2])
+        local col = self.isSelected(item[1]) and c.header or c.text
+        row.text:SetTextColor(col[1], col[2], col[3])
+        row:Show()
+      else
+        row:Hide()
+      end
+    end
+    local inner = shown * MENU_ROW
+    self.thumb:SetShown(maxOffset > 0)
+    if maxOffset > 0 then
+      local h = math.max(12, inner * shown / #self.items)
+      self.thumb:SetHeight(h)
+      self.thumb:ClearAllPoints()
+      self.thumb:SetPoint("TOPRIGHT", -2, -3 - (inner - h) * self.offset / maxOffset)
+    end
+  end
+
+  m:EnableMouseWheel(true)
+  m:SetScript("OnMouseWheel", function(self, delta)
+    self.offset = self.offset - delta * 2
+    self:Paint()
+  end)
+  return m
+end
+
+local menus = setmetatable({}, { __mode = "k" }) -- window frame -> its popup
+
+function UI.OpenMenu(owner, items, isSelected, onPick)
+  local parent = owner:GetParent()
+  local m = menus[parent]
+  if not m then
+    m = buildMenu(parent)
+    menus[parent] = m
+  end
+  if m:IsShown() and m.owner == owner then
+    m:Hide()
+    return
+  end
+  m.owner, m.items, m.isSelected, m.onPick, m.offset = owner, items, isSelected, onPick, 0
+  for i, item in ipairs(items) do -- open scrolled to the current choice
+    if isSelected(item[1]) then m.offset = i - math.ceil(MENU_MAX / 2) end
+  end
+  m:ClearAllPoints()
+  m:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -2)
+  m:SetSize(math.max(owner:GetWidth(), 150), math.min(#items, MENU_MAX) * MENU_ROW + 6)
+  m:Paint()
+  m.catcher:Show()
+  m:Show()
+end
+
+-- A filter button that opens the drop-down. `options()` returns
 -- { {value, label}, ... }; every menu starts with "All" (value nil).
 local function newFilter(parent, r, title, key, options, onChange)
   local c = ns.Skin.colors
@@ -84,21 +215,15 @@ local function newFilter(parent, r, title, key, options, onChange)
   end
 
   button:SetScript("OnClick", function(self)
-    if not (MenuUtil and MenuUtil.CreateContextMenu) then return end
-    MenuUtil.CreateContextMenu(self, function(_, root)
-      if root.SetScrollMode then root:SetScrollMode(360) end
-      local function add(value, text)
-        root:CreateRadio(text,
-          function() return ns.db.filters[key] == value end,
-          function()
-            ns.db.filters[key] = value
-            refresh()
-            onChange()
-          end)
-      end
-      add(nil, L.ALL)
-      for _, o in ipairs(options()) do add(o[1], o[2]) end
-    end)
+    local items = { { nil, L.ALL } }
+    for _, o in ipairs(options()) do items[#items + 1] = o end
+    UI.OpenMenu(self, items,
+      function(value) return ns.db.filters[key] == value end,
+      function(value)
+        ns.db.filters[key] = value
+        refresh()
+        onChange()
+      end)
   end)
 
   refresh()
