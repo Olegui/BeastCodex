@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- No changes to the addon. First version published to CurseForge straight from GitHub.
+
 ## 1.1.1
 
 - New icon: a plain paw on a flat color, easier to tell apart at minimap size.
