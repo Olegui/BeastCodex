@@ -180,8 +180,7 @@ end })
 
 table.insert(ns.tests, { "theme: every theme defines every rectangle the window needs", function()
   for name, t in pairs(ns.Themes) do
-    for _, key in ipairs({ "search", "close", "check", "check2", "themeButton", "credits", "list", "detailArea", "model",
-                           "name", "text",
+    for _, key in ipairs({ "search", "close", "check", "check2", "themeButton", "credits", "list", "model", "name", "text",
                            "mapButton", "clearButton" }) do
       assert(type(t[key]) == "table" and t[key].x and t[key].y, name .. " lacks " .. key)
     end
@@ -195,10 +194,6 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
       assert(t.imgW and t.imgH and t.texW and t.texH, name .. " texture size")
       -- A path with single backslashes loses them silently and the art never loads.
       assert(t.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " texture path: " .. t.texture)
-    end
-    if t.emptyArt then
-      assert(t.emptyArt.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " empty art path")
-      assert(t.emptyArt.imgW <= t.emptyArt.texW and t.emptyArt.imgH <= t.emptyArt.texH, name .. " empty art size")
     end
     if t.rowArt then
       assert(t.rowArt.texture:find("^Interface\\AddOns\\BeastCodex\\Art\\%w+$"), name .. " row art path")

@@ -160,69 +160,8 @@ def build(name):
     return atlas
 
 
-# The right panel with nothing selected. The cover hides what is painted there
-# (viewport, divider, main button) and spans the panel's whole inside.
-COVER = (1427, 228, 1870, 1116)
-BELOW_BUTTON = 1030                    # under this line nothing is painted but decorations
-PANEL_PLAIN = (1445, 652, 1855, 898)   # plain stretch of the panel, between viewport and divider
-DECOR_STRIP = 1857                     # right of this, bright pixels are the antler crossing the edge
-EMPTY_W, EMPTY_H = 222, 444
-
-
-def build_empty(name):
-    """A plain piece of the detail panel's own surface, shaped to leave decorations alone.
-
-    The plain stretch is smoothed (so its blotches do not repeat visibly) and
-    repeated down the panel, every other copy flipped, which gives joins with
-    no seam and exactly the panel's tone. Where a leaf or the antler lies over
-    the panel the cover is transparent, so they stay in front.
-    """
-    art = Image.open(os.path.join(ROOT, "art-src", name + ".png")).convert("RGB")
-    k = art.width / 2000.0
-    box = [int(v * k) for v in COVER]
-    w, h = box[2] - box[0], box[3] - box[1]
-
-    tile = art.crop([int(v * k) for v in PANEL_PLAIN])
-    tile = Image.blend(tile, tile.filter(ImageFilter.GaussianBlur(22)), 0.75).resize((w, tile.height), Image.LANCZOS)
-    full = Image.new("RGB", (w, h))
-    y, flip = 0, False
-    while y < h:
-        full.paste(tile.transpose(Image.FLIP_TOP_BOTTOM) if flip else tile, (0, y))
-        y += tile.height
-        flip = not flip
-
-    # Keep decorations in front: saturated green anywhere (leaves), and anything
-    # clearly brighter than the surface where only decorations can be: the strip
-    # by the right edge and the area under the main button (antler).
-    under = art.crop(box)
-    px = under.load()
-    base = sum(tile.convert("L").get_flattened_data()) / (tile.width * tile.height)
-    strip = int((DECOR_STRIP - COVER[0]) * k)
-    low = int((BELOW_BUTTON - COVER[1]) * k)
-    mask = Image.new("L", (w, h), 255)
-    mp = mask.load()
-    for yy in range(h):
-        for xx in range(w):
-            r, g, b = px[xx, yy]
-            if (g - r > 25 and g > 60) or ((xx >= strip or yy >= low) and (r * 299 + g * 587 + b * 114) / 1000 > base + 40):
-                mp[xx, yy] = 0
-    mask = mask.filter(ImageFilter.MinFilter(7)).filter(ImageFilter.GaussianBlur(1.5))
-    edge = Image.new("L", (w, h), 0)                                  # fade into the panel at the rim
-    ImageDraw.Draw(edge).rectangle((2, 2, w - 3, h - 3), fill=255)
-    mask = Image.composite(mask, Image.new("L", (w, h), 0), edge.filter(ImageFilter.GaussianBlur(1.5)))
-
-    piece = full.convert("RGBA")
-    piece.putalpha(mask)
-    canvas = Image.new("RGBA", (256, 512), (0, 0, 0, 0))
-    canvas.paste(piece.resize((EMPTY_W, EMPTY_H), Image.LANCZOS), (0, 0))
-    return canvas
-
-
 if __name__ == "__main__":
     for name in PALETTES:
         out = os.path.join(ROOT, "Art", name + "Rows.tga")
         build(name).save(out, format="TGA", compression=None)
         print("wrote %s (%dx%d)" % (out, TEX_W, TEX_H))
-        out = os.path.join(ROOT, "Art", name + "Empty.tga")
-        build_empty(name).save(out, format="TGA", compression=None)
-        print("wrote %s" % out)

@@ -27,7 +27,6 @@ ns.Themes.classic = {
   credits = { x = 48, y = 534, w = 800 },
   list = { x = 220, y = 72, w = 386, h = 440 },
   rowH = 20,
-  detailArea = { x = 618, y = 72, w = 230, h = 440 },
   model = { x = 618, y = 72, w = 230, h = 170 },
   name = { x = 618, y = 250, w = 230 },
   text = { x = 618, y = 276, w = 230 },
@@ -112,11 +111,6 @@ local function panels(look)
     check2 = { x = 166, y = 628, w = 34, h = 34, labelW = 262 },
     count = look.count or { x = 166, y = 1084, w = 310 },
     list = { x = 552, y = 226, w = 820, h = 892 },
-    -- The right panel's inside. While nothing is selected it is covered by a
-    -- plain piece of the panel's own surface (tools/make_rows.py).
-    detailArea = { x = 1427, y = 228, w = 443, h = 888 },
-    emptyArt = { texture = ART .. look.art .. "Empty", texW = 256, texH = 512, imgW = 222, imgH = 444,
-      area = { x = 1427, y = 228, w = 443, h = 888 } },
     model = { x = 1458, y = 250, w = 380, h = 354 },
     name = { x = 1452, y = 640, w = 404 },
     text = { x = 1452, y = 704, w = 404 },
