@@ -1,1 +1,145 @@
 local ADDON, ns = ...
+local L = ns.L
+
+-- Pure list logic: no frames here, so it can be checked by /beastcodex selftest.
+local Filter = {}
+ns.Filter = Filter
+
+-- { {1,10}, {11,20}, ... } up to the highest level in the data.
+function Filter.Buckets()
+  local out = {}
+  for lo = 1, ns.MaxLevel, 10 do out[#out + 1] = { lo, lo + 9 } end
+  return out
+end
+
+local function sortedKeys(set)
+  local out = {}
+  for k in pairs(set) do out[#out + 1] = k end
+  table.sort(out)
+  return out
+end
+
+function Filter.Families()
+  local set = {}
+  for _, c in ipairs(ns.Creatures) do set[c.family] = true end
+  return sortedKeys(set)
+end
+
+function Filter.Zones()
+  local set = {}
+  for _, c in ipairs(ns.Creatures) do if c.zone then set[c.zone] = true end end
+  return sortedKeys(set)
+end
+
+function Filter.FamilyName(family)
+  return L["FAMILY_" .. family]
+end
+
+local function matches(c, f, lo, hi, search)
+  if f.family and c.family ~= f.family then return false end
+  if f.zone and c.zone ~= f.zone then return false end
+  if f.showUntameable == false and not c.tame then return false end
+  -- A level range matches a bucket when the two overlap. Unknown level matches no bucket.
+  if lo and not (c.min and c.max and c.min <= hi and c.max >= lo) then return false end
+  if search and not c.name:lower():find(search, 1, true) then return false end
+  return true
+end
+
+-- Returns rows for the list: { header = "text" } or { creature = c }.
+-- `creatures` must already be sorted by family and look (the generated data is).
+-- A header is only emitted when a creature follows it.
+function Filter.Apply(creatures, f, looks)
+  looks = looks or ns.Looks
+  local lo, hi
+  if f.bucket then lo, hi = (f.bucket - 1) * 10 + 1, f.bucket * 10 end
+  local search = f.search and f.search ~= "" and f.search:lower() or nil
+
+  local rows, count, lastGroup = {}, 0, nil
+  for _, c in ipairs(creatures) do
+    if matches(c, f, lo, hi, search) then
+      local group = c.family .. "/" .. (c.look or "")
+      if group ~= lastGroup then
+        local look = c.look and looks[c.look]
+        rows[#rows + 1] = { header = look and look.name or Filter.FamilyName(c.family) }
+        lastGroup = group
+      end
+      rows[#rows + 1] = { creature = c }
+      count = count + 1
+    end
+  end
+  return rows, count
+end
+
+-- Self-checks ---------------------------------------------------------------
+
+local LOOKS = { black = { name = "Charcoal Black Wolf", family = "wolf" } }
+local SAMPLE = {
+  { id = 1, name = "Forest Spider", family = "spider", min = 5, max = 6, tame = true, zone = "Elwynn Forest" },
+  { id = 2, name = "Snarler", family = "wolf", look = "black", min = 42, max = 42, tame = true, zone = "Feralas" },
+  { id = 3, name = "Vilebranch Raiding Wolf", family = "wolf", look = "black", min = 50, max = 51, tame = true, zone = "The Hinterlands" },
+  { id = 4, name = "Vilebranch Wolf Pup", family = "wolf", look = "black", min = 46, max = 47, tame = true, zone = "The Hinterlands" },
+  { id = 5, name = "Shadow (Pet)", family = "wolf", look = "black", min = 30, max = 30, tame = false, zone = "Darnassus" },
+  { id = 6, name = "Mystery", family = "wolf", tame = true },
+}
+
+local function ids(rows)
+  local out = {}
+  for _, r in ipairs(rows) do if r.creature then out[#out + 1] = r.creature.id end end
+  return table.concat(out, ",")
+end
+
+local function headers(rows)
+  local out = {}
+  for _, r in ipairs(rows) do if r.header then out[#out + 1] = r.header end end
+  return table.concat(out, "|")
+end
+
+local function apply(f) return Filter.Apply(SAMPLE, f, LOOKS) end
+
+local function test(name, fn) table.insert(ns.tests, { "filter: " .. name, fn }) end
+
+test("no filters returns everything with headers", function()
+  local rows, count = apply({ showUntameable = true, search = "" })
+  assert(count == 6 and ids(rows) == "1,2,3,4,5,6", ids(rows))
+  assert(headers(rows) == L.FAMILY_spider .. "|Charcoal Black Wolf|" .. L.FAMILY_wolf, headers(rows))
+end)
+
+test("level buckets match by overlap", function()
+  assert(ids(apply({ bucket = 5 })) == "2,3,4", ids(apply({ bucket = 5 })))   -- 41-50
+  assert(ids(apply({ bucket = 6 })) == "3")                                      -- 51-60
+  assert(ids(apply({ bucket = 4 })) == "")                                       -- 31-40
+  assert(ids(apply({ bucket = 1 })) == "1")
+end)
+
+test("unknown level matches no bucket but shows without one", function()
+  assert(not ids(apply({ bucket = 3 })):find("6"))
+  assert(ids(apply({})):find("6"))
+end)
+
+test("hiding untameable removes them", function()
+  assert(ids(apply({ showUntameable = false })) == "1,2,3,4,6")
+end)
+
+test("a header with no visible creature is not emitted", function()
+  local rows = apply({ family = "spider" })
+  assert(headers(rows) == L.FAMILY_spider and ids(rows) == "1")
+  rows = apply({ zone = "Darnassus", showUntameable = false })
+  assert(#rows == 0)
+end)
+
+test("family and zone combine", function()
+  assert(ids(apply({ family = "wolf", zone = "The Hinterlands" })) == "3,4")
+  assert(ids(apply({ family = "spider", zone = "Feralas" })) == "")
+end)
+
+test("search is case-insensitive, substring, and treats pattern characters literally", function()
+  assert(ids(apply({ search = "wolf pup" })) == "4")
+  assert(ids(apply({ search = "(" })) == "5")
+  assert(ids(apply({ search = "%" })) == "")
+  assert(ids(apply({ search = "VILE" })) == "3,4")
+end)
+
+test("buckets cover the data's level range", function()
+  local b = Filter.Buckets()
+  assert(b[1][1] == 1 and b[1][2] == 10 and b[#b][2] >= ns.MaxLevel)
+end)
