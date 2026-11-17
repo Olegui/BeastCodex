@@ -51,7 +51,7 @@ local function paint(row, data)
   if not c then
     row:EnableMouse(false)
     if row.bg then row.bg:Hide() end
-    row.name:SetWidth(row.nameMax + 18)
+    row.name:SetWidth(row.headerW)
     row.name:SetText(data.header)
     row.name:SetTextColor(col.header[1], col.header[2], col.header[3])
     row.name:SetPoint("LEFT", 4, 0)
@@ -64,7 +64,7 @@ local function paint(row, data)
     row.bg:Show()
     row.bg:SetAlpha(c.tame and 1 or 0.45)
   end
-  row.name:SetPoint("LEFT", 22, 0)
+  row.name:SetPoint("LEFT", row.indent, 0)
   row.name:SetWidth(0) -- natural width, so it can be measured
   row.name:SetText(c.name)
   local cls = ns.ClsLabel(c.cls)
@@ -150,7 +150,10 @@ local function newRow(parent, width, height)
   row.icon:SetPoint("LEFT", 4, 0)
   row.icon:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
 
-  local zoneW, levelW = math.floor(width * 0.36), 44
+  -- Column split; a theme with a narrow list gives the name more room.
+  local cols = S.cols or {}
+  local zoneW, levelW = math.floor(width * (cols.zone or 0.36)), cols.level or 44
+  row.indent = cols.indent or 22
   row.zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   row.zone:SetPoint("RIGHT", -6, 0)
   row.zone:SetWidth(zoneW)
@@ -163,9 +166,10 @@ local function newRow(parent, width, height)
   row.level:SetJustifyH("LEFT")
 
   -- Name and tag share what is left of the row; see List.NameWidth.
-  row.nameMax = width - 22 - zoneW - levelW - 24
+  row.nameMax = width - row.indent - zoneW - levelW - 18
+  row.headerW = width - 8 -- a header has the whole row to itself
   row.name = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-  row.name:SetPoint("LEFT", 22, 0)
+  row.name:SetPoint("LEFT", row.indent, 0)
   row.name:SetJustifyH("LEFT")
   row.name:SetWordWrap(false)
 

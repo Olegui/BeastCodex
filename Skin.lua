@@ -113,6 +113,7 @@ ns.Themes.tomo = ns.ArtTheme({
   texture = "Interface\\AddOns\\BeastCodex\\Art\\Tomo",
   texW = 1024, texH = 1024, imgW = 1024, imgH = 637,
   noShadow = true,
+  cols = { zone = 0.30, level = 36, indent = 20 }, -- the page is narrow: favor the name
   title = { x = 375, y = 286, w = 494, center = true },
   search = { x = 812, y = 92, w = 450, h = 44, textColor = { 0.93, 0.87, 0.74 } },
   close = { x = 1668, y = 232, w = 60, h = 60 },
@@ -131,7 +132,7 @@ ns.Themes.tomo = ns.ArtTheme({
   clearButton = { x = 1575, y = 955, w = 120, h = 120 },
   scroll = { width = 4, track = { 0.30, 0.20, 0.10, 0.18 }, thumb = { 0.40, 0.20, 0.10, 0.75 } },
   colors = {
-    text = { 0.22, 0.14, 0.07 }, header = { 0.50, 0.15, 0.07 }, dim = { 0.52, 0.44, 0.33 },
+    text = { 0.22, 0.14, 0.07 }, header = { 0.50, 0.15, 0.07 }, dim = { 0.46, 0.37, 0.27 },
     title = { 0.20, 0.12, 0.06 }, tag = "8a3b12",
     hover = { 0.30, 0.18, 0.08, 0.14 }, selected = { 0.50, 0.15, 0.07, 0.20 },
     menu = { 0.87, 0.77, 0.59, 0.98 }, menuBorder = { 0.35, 0.22, 0.10, 0.9 },
