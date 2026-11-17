@@ -40,3 +40,11 @@ descriptive text from either site are included.
 LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0,
 HereBeDragons-2.0 and HereBeDragons-Pins-2.0 are included unmodified under
 their own licenses, stated in each file in `Libs/`.
+
+## Trade Winds font
+
+The window title is drawn with Trade Winds, Copyright (c) 2011, Sideshow
+(a DBA of Font Diner, Inc), with Reserved Font Name "Trade Winds", licensed
+under the SIL Open Font License 1.1. The font file itself is not included:
+the title is part of the window textures. License text: art-src/fonts/TradeWinds-OFL.txt
+in the source repository.

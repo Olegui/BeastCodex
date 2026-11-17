@@ -1,0 +1,9 @@
+package-as: BeastCodex
+
+ignore:
+  - art-src
+  - docs
+  - media
+  - tools
+  - .superpowers
+  - CHANGELOG.md
