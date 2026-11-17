@@ -53,6 +53,19 @@ local function clientName(id)
   return nil
 end
 
+-- Names saved by an earlier session, usable only for the same client language
+-- and build (a patch can rename creatures). Anything else starts empty.
+function ns.NameCache(saved, locale, build)
+  local names = {}
+  if type(saved) == "table" and saved.locale == locale and saved.build == build
+    and type(saved.names) == "table" then
+    for id, name in pairs(saved.names) do
+      if type(id) == "number" and type(name) == "string" and name ~= "" then names[id] = name end
+    end
+  end
+  return names
+end
+
 -- The name already fetched for this creature, or nil. Never asks the client.
 function ns.KnownLocalName(c)
   return localNames[c.id]
@@ -77,8 +90,14 @@ frame:SetScript("OnEvent", function(self, _, name)
   if name ~= ADDON then return end
   self:UnregisterEvent("ADDON_LOADED")
 
-  BeastCodexDB = ns.SanitizeDB(BeastCodexDB, ns.Creatures)
+  local saved = BeastCodexDB
+  BeastCodexDB = ns.SanitizeDB(saved, ns.Creatures)
   ns.db = BeastCodexDB
+  -- Names fetched in earlier sessions come back at once; new ones are added
+  -- to the same table, which is what gets saved.
+  local locale, build = GetLocale(), select(2, GetBuildInfo())
+  localNames = ns.NameCache(type(saved) == "table" and saved.nameCache, locale, build)
+  ns.db.nameCache = { locale = locale, build = build, names = localNames }
   ns.ApplyTheme(ns.db.theme)
 
   local ldb = LibStub("LibDataBroker-1.1", true)
@@ -215,6 +234,16 @@ table.insert(ns.tests, { "names: client name when it answers, English otherwise,
   C_TooltipInfo = old
   assert(got[1] == "Rosnador" and got[2] == "Pending" and got[3] == "Empty" and got[4] == "Broken")
   assert(known[1] == "Rosnador" and known[2] == nil and without == "NoApi")
+end })
+
+table.insert(ns.tests, { "names: saved names are reused only for the same language and build", function()
+  local saved = { locale = "ptBR", build = "70959", names = { [5356] = "Rosnador", [30] = "", bad = "x", [7] = 12 } }
+  local names = ns.NameCache(saved, "ptBR", "70959")
+  assert(names[5356] == "Rosnador" and names[30] == nil and names.bad == nil and names[7] == nil)
+  assert(next(ns.NameCache(saved, "deDE", "70959")) == nil)   -- other language
+  assert(next(ns.NameCache(saved, "ptBR", "71000")) == nil)   -- other build
+  assert(next(ns.NameCache(nil, "ptBR", "70959")) == nil)
+  assert(next(ns.NameCache({ locale = "ptBR", build = "70959", names = "x" }, "ptBR", "70959")) == nil)
 end })
 
 table.insert(ns.tests, { "locale: unknown key falls back to the key", function()
