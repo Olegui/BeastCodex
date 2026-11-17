@@ -401,20 +401,50 @@ function Window:Create()
   search:SetFontObject("GameFontHighlightSmall")
   local sc = S.search.textColor or c.text
   search:SetTextColor(sc[1], sc[2], sc[3])
-  search:SetTextInsets(6, 6, 0, 0)
+  search:SetTextInsets(6, S.search.padRight or 6, 0, 0)
   search:SetAutoFocus(false)
   if c.control then
     local bg = search:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints()
     bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
   end
+  -- Placeholder: shown while the field is empty and not being typed in.
+  local hint = search:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+  hint:SetPoint("LEFT", 6, 0)
+  hint:SetPoint("RIGHT", -(S.search.padRight or 6), 0)
+  hint:SetJustifyH("LEFT")
+  hint:SetTextColor(c.dim[1], c.dim[2], c.dim[3])
+  hint:SetText(L.SEARCH_PLACEHOLDER)
+  UI.Flat(hint)
+
+  -- With text in the field, an X over the magnifier clears it.
+  local clear = UI.Button(f, S.searchClear, L.CLEAR_SEARCH, S.searchClear.text ~= nil)
+  if clear.label then clear.label:SetText(S.searchClear.text) end
+  local cover = UI.Atlas(clear, "BACKGROUND", S.searchClear.face)
+  if cover then cover:SetAllPoints() end
+  clear:SetFrameLevel(search:GetFrameLevel() + 2)
+  clear:SetScript("OnClick", function()
+    search:SetText("")
+    search:ClearFocus()
+  end)
+
+  local function paintSearch()
+    local empty = search:GetText() == ""
+    hint:SetShown(empty and not search:HasFocus())
+    clear:SetShown(not empty)
+  end
+  search:SetScript("OnEditFocusGained", paintSearch)
+  search:SetScript("OnEditFocusLost", paintSearch)
+
   search:SetText(ns.db.filters.search or "")
   search:SetScript("OnEscapePressed", search.ClearFocus)
   search:SetScript("OnEnterPressed", search.ClearFocus)
   search:SetScript("OnTextChanged", function(self)
+    paintSearch()
     ns.db.filters.search = self:GetText()
     Window:Refresh()
   end)
+  paintSearch()
   if S.search.label then
     local label = f:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     label:SetPoint("RIGHT", search, "LEFT", -8, 0)

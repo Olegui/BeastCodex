@@ -24,6 +24,7 @@ BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's
 OFF_PAD, OFF_W = 6, 338                          # the unavailable face is cut 6 units larger all round
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
 FIELD_W, FIELD_H, BOX_X, TICK_X, BOX = 362, 56, 368, 432, 48
+CLEAR_X, CLEAR_W, CLEAR_H = 496, 54, 42
 SS = 4  # supersampling for smooth edges
 
 # Where the painted controls are in the art, in a 2000-px-wide frame. Both
@@ -157,6 +158,17 @@ def build(name):
     box = cut(art, CLOSE, (BOX, BOX), (cx - 13, cy - 13, cx + 13, cy + 13), (cx - 16, cy))
     atlas.alpha_composite(box, (BOX_X, CONTROLS_Y))
     atlas.alpha_composite(stroke((BOX, BOX), [(13, 25), (21, 33), (35, 15)], accent + (255,), 5), (TICK_X, CONTROLS_Y))
+    # The search field's magnifier spot, emptied, with an X: laid over the magnifier while there is text.
+    k = art.width / 2000.0
+    src = art.convert("RGB")
+    color = src.getpixel((int(inside[0] * k), int(inside[1] * k)))
+    spot = src.crop([int(round(v * k)) for v in MAGNIFIER])
+    ImageDraw.Draw(spot).rectangle((0, 0, spot.width, spot.height), fill=color)
+    spot = spot.resize((CLEAR_W, CLEAR_H), Image.LANCZOS).convert("RGBA")
+    cx, cy, r = CLEAR_W / 2, CLEAR_H / 2, 8
+    spot.alpha_composite(stroke((CLEAR_W, CLEAR_H), [(cx - r, cy - r), (cx + r, cy + r)], accent + (255,), 2.6))
+    spot.alpha_composite(stroke((CLEAR_W, CLEAR_H), [(cx - r, cy + r), (cx + r, cy - r)], accent + (255,), 2.6))
+    atlas.alpha_composite(spot, (CLEAR_X, CONTROLS_Y))
     return atlas
 
 

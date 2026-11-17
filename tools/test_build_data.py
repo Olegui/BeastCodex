@@ -108,6 +108,7 @@ class EmitTest(unittest.TestCase):
         self.assertEqual(t["FamilyDiet"]["wolf"], "Meat")
         self.assertEqual(t["Looks"]["wolfskinblack"], {"name": "Charcoal Black Wolf", "family": "wolf"})
         self.assertNotIn("unusedlook", t["Looks"])        # looks no creature uses are left out
+        self.assertFalse(t["AbilitySpell"])                 # emitted (empty) even with no spells
 
     def test_lua_string_escaping_and_nil_fields(self):
         _, t = self.emit(build_data.merge({}, [PET_NEW], {}))

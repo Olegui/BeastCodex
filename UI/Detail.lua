@@ -5,6 +5,29 @@ local L = ns.L
 local Detail = { pinned = nil }
 ns.Detail = Detail
 
+-- An ability's name as the client shows it, from one of its spells; English
+-- when the client has no name for it.
+function ns.AbilityName(name)
+  local id = ns.AbilitySpell and ns.AbilitySpell[name]
+  if not id then return name end
+  local ok, text = pcall(function()
+    if C_Spell and C_Spell.GetSpellName then return C_Spell.GetSpellName(id) end
+    return GetSpellInfo and (GetSpellInfo(id))
+  end)
+  return ok and type(text) == "string" and text ~= "" and text or name
+end
+
+-- A family's diet in the player's language. The data spells it in English,
+-- separated by " - " or ",".
+function ns.DietText(diet)
+  local parts = {}
+  for item in diet:gmatch("[^,%-]+") do
+    item = item:match("^%s*(.-)%s*$")
+    if item ~= "" then parts[#parts + 1] = L["DIET_" .. item:upper():gsub(" ", "_")] end
+  end
+  return table.concat(parts, ", ")
+end
+
 -- The text lines for a creature. Kept apart from the frames so it can be checked.
 function Detail.Lines(c)
   local lines = {}
@@ -20,12 +43,12 @@ function Detail.Lines(c)
   end
   if c.abilities and #c.abilities > 0 then
     local names = {}
-    for i, a in ipairs(c.abilities) do names[i] = a[1] .. " " .. a[2] end
+    for i, a in ipairs(c.abilities) do names[i] = ns.AbilityName(a[1]) .. " " .. a[2] end
     lines[#lines + 1] = L.TEACHES_FMT:format(table.concat(names, ", "))
   end
   if c.speed then lines[#lines + 1] = L.ATTACK_SPEED_FMT:format(c.speed) end
   local diet = ns.FamilyDiet[c.family]
-  if diet then lines[#lines + 1] = L.DIET_FMT:format(diet) end
+  if diet then lines[#lines + 1] = L.DIET_FMT:format(ns.DietText(diet)) end
   return lines
 end
 
@@ -185,9 +208,24 @@ table.insert(ns.tests, { "detail: lines for a tameable rare with abilities", fun
     "Feralas",
     L.TEACHES_FMT:format("Bite 6, Furious Howl 3"),
     L.ATTACK_SPEED_FMT:format(2.0),
-    L.DIET_FMT:format("Meat"),
+    L.DIET_FMT:format(L.DIET_MEAT),
   }, "\n")
   assert(t == want, t)
+end })
+
+table.insert(ns.tests, { "detail: diets and abilities in the player's language", function()
+  assert(ns.DietText("Fruit - Fungus") == L.DIET_FRUIT .. ", " .. L.DIET_FUNGUS)
+  assert(ns.DietText("Meat, Fish") == L.DIET_MEAT .. ", " .. L.DIET_FISH)
+  assert(ns.DietText("Fish - Raw Fish") == L.DIET_FISH .. ", " .. L.DIET_RAW_FISH)
+  local oldSpell, oldApi = ns.AbilitySpell, C_Spell
+  ns.AbilitySpell = { Bite = 17253, Broken = 1 }
+  C_Spell = { GetSpellName = function(id)
+    if id == 17253 then return "Mordida" end
+    error("unknown spell")
+  end }
+  local bite, broken, unknown = ns.AbilityName("Bite"), ns.AbilityName("Broken"), ns.AbilityName("Pinch")
+  ns.AbilitySpell, C_Spell = oldSpell, oldApi
+  assert(bite == "Mordida" and broken == "Broken" and unknown == "Pinch")
 end })
 
 table.insert(ns.tests, { "detail: missing fields produce no lines and no error", function()

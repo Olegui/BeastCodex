@@ -13,7 +13,8 @@ ns.Themes.classic = {
   W = 896, H = 560,
   backdrop = true,
   title = { x = 48, y = 28 },
-  search = { x = 668, y = 26, w = 176, h = 22, label = true },
+  search = { x = 668, y = 26, w = 176, h = 22, label = true, padRight = 24 },
+  searchClear = { x = 822, y = 26, w = 22, h = 22, text = "X" },
   close = { x = 852, y = 22, w = 24, h = 24, text = "X" },
   filters = {
     { x = 48, y = 88, w = 160, h = 24, label = { x = 48, y = 72 } },
@@ -93,6 +94,7 @@ local function panels(look)
         field = { 0, 256, 362, 56 },     -- drop-down field with its arrow, cut from the search field
         box = { 368, 256, 48, 48 },      -- checkbox, cut from the round close button
         tick = { 432, 256, 48, 48 },     -- its tick
+        clearSearch = { 496, 256, 54, 42 }, -- the search field's magnifier spot with an X
       },
     },
     label = look.label,
@@ -100,7 +102,9 @@ local function panels(look)
     -- Same height and look as the search field it sits beside.
     themeButton = { x = 1030, y = 108, w = 368, h = 57, face = "field", padRight = 24 },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },
-    search = { x = 1436, y = 119, w = 300, h = 38 },
+    search = { x = 1436, y = 119, w = 300, h = 38, padRight = 8 },
+    -- Over the magnifier painted in the field: a piece of the field with an X instead.
+    searchClear = { x = 1740, y = 116, w = 54, h = 42, face = "clearSearch" },
     close = { x = 1832, y = 111, w = 50, h = 50 },
     filters = {
       { x = 164, y = 266, w = 310, h = 53, padRight = 22, label = { x = 164, y = 234 } },

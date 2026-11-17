@@ -175,6 +175,37 @@ ns.FamilyDiet = {
   ["wolf"] = "Meat",
 }
 
+-- One spell per ability name; the addon asks the client for its name in the player's language.
+ns.AbilitySpell = {
+  ["Bite"] = 17253,
+  ["Charge"] = 7371,
+  ["Claw"] = 16827,
+  ["Cower"] = 1742,
+  ["Dash"] = 23099,
+  ["Demoralizing Screech"] = 24423,
+  ["Dismember"] = 1264758,
+  ["Dive"] = 23145,
+  ["Dust Cloud"] = 1265899,
+  ["Fire Breath"] = 34889,
+  ["Furious Howl"] = 24604,
+  ["Gore"] = 35290,
+  ["Lightning Breath"] = 24844,
+  ["Mine!"] = 1265054,
+  ["Pinch"] = 1264735,
+  ["Poison Spit"] = 35387,
+  ["Prowl"] = 24450,
+  ["Savage Rend"] = 1265065,
+  ["Scorpid Poison"] = 24640,
+  ["Shell Shield"] = 26064,
+  ["Sonic Blast"] = 1264478,
+  ["Swipe"] = 1264494,
+  ["Tendon Rip"] = 1265038,
+  ["Thunderstomp"] = 26090,
+  ["Trickster's Dance"] = 1310617,
+  ["Warp"] = 35346,
+  ["Web"] = 1265843,
+}
+
 ns.MaxLevel = 62
 
 ns.Creatures = {
