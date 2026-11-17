@@ -2,16 +2,17 @@
 
     .cache/venv/Scripts/python tools/run_lua_tests.py
 
-Every .lua file in the .toc is compiled (syntax check). The files that hold
-logic are executed against a tiny stub of the WoW API, then ns.tests run.
-UI files are only compiled: they need the real client.
+Every .lua file in the .toc is compiled (syntax check). The addon's own
+files are executed against a tiny stub of the WoW API (their top level only
+defines functions), then ns.tests run. Frame-building code is not exercised:
+that needs the real client.
 """
-import os, re, sys
+import os, sys
 
 from lupa import lua51
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXECUTE = re.compile(r"^(Locales\\enUS|Data\\|Skin|Core|Filter|Map|SelfTest)")
+SKIP = "Libs"  # third-party libraries are compiled but not executed
 
 STUB = r"""
 local noop = setmetatable({}, {})
@@ -44,7 +45,7 @@ def main():
         if chunk is None:
             print("SYNTAX", err)
             bad += 1
-        elif EXECUTE.match(rel) and not rel.startswith("Libs"):
+        elif not rel.startswith(SKIP):
             try:
                 chunk("BeastCodex", ns)
             except Exception as e:  # a load-time error is a failure too
