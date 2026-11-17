@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX_W, TEX_H, SLOT_H = 1024, 512, 64
 ROW_W, ROW_H = 800, 44
 PILL_W, PILL_H = 96, 30
-GREY_PILL_X = 920
+GREY_PILL_X, SPAWN_PILL_X = 920, 560
 BTN_W, BTN_H, OFF_X, FACE_X = 390, 60, 128, 528  # button faces share the pill's slot
 OFF_PAD, OFF_W = 6, 338                          # the unavailable face is cut 6 units larger all round
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
@@ -144,6 +144,8 @@ def build(name):
     atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, pill, pill_border, 2), (0, 3 * SLOT_H))
     # Grey version of the tag, for plain rares.
     atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, (72, 72, 72, 235), (165, 165, 165, 255), 2), (GREY_PILL_X, 3 * SLOT_H))
+    # Purple version, for spawned creatures.
+    atlas.alpha_composite(rounded((PILL_W, PILL_H), 9, (66, 44, 92, 235), (162, 124, 214, 255), 2), (SPAWN_PILL_X, 4 * SLOT_H))
 
     inside = ((SEARCH[0] + SEARCH[2]) // 2, (SEARCH[1] + SEARCH[3]) // 2)  # plain interior of the search field
     # The map button while a creature has no location: the painted button itself, drained of color.

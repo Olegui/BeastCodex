@@ -37,6 +37,8 @@ function List.NameWidth(available, nameWidth, tagWidth, gap)
 end
 
 local TAG_GAP, PILL_PAD = 6, 5
+local TAG_PIECE = { grey = "pillGrey", spawn = "pillSpawn" }                    -- atlas pieces
+local TAG_TEXT = { grey = { 0.84, 0.84, 0.84 }, spawn = { 0.88, 0.80, 1.00 } }  -- text on them
 
 local function paint(row, data)
   row.data = data
@@ -48,7 +50,7 @@ local function paint(row, data)
   row.selected:Hide()
   row.tag:SetText("")
   if row.pill then row.pill:Hide() end
-  if row.pillGrey then row.pillGrey:Hide() end
+  for _, p in pairs(row.pills) do p:Hide() end
   if not c then
     row:EnableMouse(false)
     if row.bg then row.bg:Hide() end
@@ -72,15 +74,19 @@ local function paint(row, data)
   local tagW = 0
   if cls then
     row.tag:SetText(cls)
-    -- Rare gets a grey tag, everything else (elite, spawned) the accent one.
-    local grey = List.GreyTag(c.cls)
-    local tc = grey and row.greyText or row.tagColor
+    -- Each kind of tag has its own colors; elite uses the theme's accent.
+    local style = List.TagStyle(c.cls)
+    local tc = style and TAG_TEXT[style] or row.tagColor
     row.tag:SetTextColor(tc[1], tc[2], tc[3])
     tagW = row.tag:GetStringWidth() + (row.pill and 2 * PILL_PAD or 0)
-    local pill = grey and row.pillGrey or row.pill
+    local pill = style and row.pills[style] or row.pill
     if pill then
       pill:SetWidth(tagW)
       pill:Show()
+      -- The text sits on the pill actually shown: a hidden pill that was
+      -- never sized has no position, and text anchored to it is not drawn.
+      row.tag:ClearAllPoints()
+      row.tag:SetPoint("LEFT", pill, "LEFT", PILL_PAD, 0)
     end
   end
   row.name:SetWidth(List.NameWidth(row.nameMax, row.name:GetStringWidth(), tagW, TAG_GAP))
@@ -134,7 +140,7 @@ local function newRow(parent, width, height)
   local col, art = S.colors, S.rowArt
   local row = CreateFrame("Button", nil, parent)
   row:SetSize(width, height)
-  row.bg, row.pill, row.pillGrey = false, false, false -- only themes with row art have them
+  row.bg, row.pill, row.pills = false, false, {} -- only themes with row art have them
 
   local hl
   if art then
@@ -184,15 +190,17 @@ local function newRow(parent, width, height)
     tonumber(col.tag:sub(5, 6), 16) / 255 }
   row.tag:SetTextColor(tag[1], tag[2], tag[3])
   row.tagColor = tag
-  row.greyText = col.tagGreyText or { 0.82, 0.82, 0.82 }
   if art then
     row.pill = slot(row, "ARTWORK", art, 3, art.pillW, art.pillH)
     row.pill:SetHeight(height - 6)
     row.pill:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
-    row.pillGrey = ns.UI.Atlas(row, "ARTWORK", "pillGrey") or false
-    if row.pillGrey then
-      row.pillGrey:SetHeight(height - 6)
-      row.pillGrey:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+    for style, piece in pairs(TAG_PIECE) do
+      local p = ns.UI.Atlas(row, "ARTWORK", piece)
+      if p then
+        p:SetHeight(height - 6)
+        p:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+        row.pills[style] = p
+      end
     end
     row.tag:SetPoint("LEFT", row.pill, "LEFT", PILL_PAD, 0)
   else
@@ -276,17 +284,19 @@ function List:Create(parent, r)
   self.holder = holder
 end
 
--- Classifications whose tag is drawn in grey instead of the accent color.
-function List.GreyTag(cls)
-  return cls == "rare"
+-- Tag look per classification: plain rares grey, spawned creatures purple,
+-- everything else (elite, rare elite) the theme's accent.
+local STYLE = { rare = "grey", spawned = "spawn", spawnedelite = "spawn" }
+function List.TagStyle(cls)
+  return cls and STYLE[cls] or nil
 end
 
 -- Self-checks ---------------------------------------------------------------
 
-table.insert(ns.tests, { "list: only plain rare gets the grey tag", function()
-  assert(List.GreyTag("rare") == true)
-  assert(not List.GreyTag("rareelite") and not List.GreyTag("elite") and not List.GreyTag("spawned"))
-  assert(not List.GreyTag(nil))
+table.insert(ns.tests, { "list: tag look per classification", function()
+  assert(List.TagStyle("rare") == "grey")
+  assert(List.TagStyle("spawned") == "spawn" and List.TagStyle("spawnedelite") == "spawn")
+  assert(List.TagStyle("elite") == nil and List.TagStyle("rareelite") == nil and List.TagStyle(nil) == nil)
 end })
 
 table.insert(ns.tests, { "list: the tag is never cut, the name gives way", function()

@@ -96,6 +96,7 @@ local function panels(look)
         tick = { 432, 256, 48, 48 },     -- its tick
         clearSearch = { 496, 256, 54, 42 }, -- the search field's magnifier spot with an X
         pillGrey = { 920, 192, 96, 30 },  -- tag for plain rares
+        pillSpawn = { 560, 256, 96, 30 }, -- tag for spawned creatures
       },
     },
     label = look.label,
