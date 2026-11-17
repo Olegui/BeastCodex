@@ -33,33 +33,39 @@ function UI.Text(parent, r, font, color, justify)
   return UI.Flat(fs)
 end
 
+-- A texture showing one named piece of the theme's atlas (tools/make_rows.py),
+-- or nil when the theme has no atlas or no such piece. Themed controls use
+-- these so that what the addon draws matches what the art paints.
+function UI.Atlas(parent, layer, name)
+  local art = ns.Skin.rowArt
+  local piece = art and art.faces and name and art.faces[name]
+  if not piece then return nil end
+  local t = parent:CreateTexture(nil, layer)
+  t:SetTexture(art.texture)
+  t:SetTexCoord(piece[1] / art.texW, (piece[1] + piece[3]) / art.texW,
+    piece[2] / art.texH, (piece[2] + piece[4]) / art.texH)
+  return t
+end
+
 -- A clickable area. With `showLabel` it carries centered text; without it the
 -- art underneath is the button face and `tooltip` names it on hover.
 function UI.Button(parent, r, text, showLabel)
   local c = ns.Skin.colors
   local b = CreateFrame("Button", nil, parent)
   UI.Place(b, parent, r)
-  local fill = r.fill or (showLabel and not r.face and c.control)
+  local fill = showLabel and not r.face and c.control
   if fill then
     local bg = b:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints()
     bg:SetColorTexture(fill[1], fill[2], fill[3], fill[4])
   end
-  -- Button faces drawn by the addon come from the theme's atlas (tools/make_rows.py):
-  -- `face` is the button's own look, `offFace` covers it while it is unavailable.
-  local art = ns.Skin.rowArt
-  local function face(x, layer)
-    local t = b:CreateTexture(nil, layer)
-    t:SetAllPoints()
-    t:SetTexture(art.texture)
-    t:SetTexCoord(x / art.texW, (x + art.btnW) / art.texW,
-      3 * art.slotH / art.texH, (3 * art.slotH + art.btnH) / art.texH)
-    return t
-  end
-  if art and r.face then face(art.faceX, "BACKGROUND") end
-  b.off = false
-  if art and r.offFace then
-    b.off = face(art.offX, "BORDER")
+  -- `face` names the atlas piece that is the button's own look; `offFace` the
+  -- piece laid over it while it is unavailable.
+  local face = UI.Atlas(b, "BACKGROUND", r.face)
+  if face then face:SetAllPoints() end
+  b.off = UI.Atlas(b, "BORDER", r.offFace) or false
+  if b.off then
+    b.off:SetAllPoints()
     b.off:Hide()
   end
   local hl = b:CreateTexture(nil, "HIGHLIGHT")
@@ -263,23 +269,30 @@ local function newCheck(parent, r, text, checked, onChange)
   local c = ns.Skin.colors
   local b = CreateFrame("Button", nil, parent)
   UI.Place(b, parent, r)
-  local box = c.checkBox or c.control
-  if box then
-    local bg = b:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(box[1], box[2], box[3], box[4])
+  local box = UI.Atlas(b, "BACKGROUND", "box")
+  local mark = UI.Atlas(b, "ARTWORK", "tick")
+  if box and mark then
+    box:SetAllPoints()
+    mark:SetAllPoints()
+  else
+    -- No themed pieces: a flat box and the client's tick.
+    if c.control then
+      local bg = b:CreateTexture(nil, "BACKGROUND")
+      bg:SetAllPoints()
+      bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+    end
+    mark = b:CreateTexture(nil, "ARTWORK")
+    mark:SetPoint("CENTER")
+    mark:SetSize(r.w * 1.5, r.h * 1.5)
+    mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
   end
-  local mark = b:CreateTexture(nil, "ARTWORK")
-  mark:SetPoint("CENTER")
-  local ms = r.markScale or 1.5 -- a small box gets an oversized tick, a big plate a smaller one
-  mark:SetSize(r.w * ms, r.h * ms)
-  mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
   mark:SetShown(checked)
   if r.labelW then
     local label = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     label:SetPoint("LEFT", b, "RIGHT", 6, 0)
     label:SetWidth(r.labelW)
     label:SetJustifyH("LEFT")
+    label:SetWordWrap(false) -- one line, so two checkboxes never run into each other
     label:SetTextColor(c.text[1], c.text[2], c.text[3])
     label:SetText(text)
     UI.Flat(label)

@@ -83,11 +83,19 @@ local function panels(look)
     rowGap = 3,
     rowArt = {
       texture = ART .. look.art .. "Rows",
-      texW = 1024, texH = 256, slotH = 64, rowW = 800, rowH = 44, pillW = 96, pillH = 30,
-      offX = 128, faceX = 528, btnW = 390, btnH = 60, -- button faces, in the pill's slot
+      texW = 1024, texH = 512, slotH = 64, rowW = 800, rowH = 44, pillW = 96, pillH = 30,
+      -- Controls the addon draws itself, as { x, y, w, h } in the atlas.
+      faces = {
+        off = { 128, 192, 390, 60 },     -- grey face over the map button
+        outline = { 528, 192, 390, 60 }, -- "clear pins" button
+        field = { 0, 256, 330, 56 },     -- drop-down field with its arrow, like the painted ones
+        box = { 352, 256, 48, 48 },      -- checkbox
+        tick = { 416, 256, 48, 48 },     -- its tick
+      },
     },
     label = look.label,
-    themeButton = { x = 1128, y = 117, w = 264, h = 42, fill = look.well, textColor = a },
+    -- Same height and look as the search field it sits beside.
+    themeButton = { x = 1096, y = 109, w = 302, h = 56, face = "field", padRight = 24 },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },
     search = { x = 1436, y = 119, w = 300, h = 38 },
     close = { x = 1832, y = 111, w = 50, h = 50 },
@@ -96,24 +104,23 @@ local function panels(look)
       { x = 164, y = 376, w = 310, h = 53, padRight = 22, label = { x = 164, y = 344 } },
       { x = 164, y = 487, w = 310, h = 53, padRight = 22, label = { x = 164, y = 455 } },
     },
-    check = { x = 166, y = 580, w = 30, h = 30, labelW = 250 },
-    check2 = { x = 166, y = 628, w = 30, h = 30, labelW = 250 },
+    check = { x = 166, y = 578, w = 34, h = 34, labelW = 262 },
+    check2 = { x = 166, y = 628, w = 34, h = 34, labelW = 262 },
     count = look.count or { x = 166, y = 1084, w = 310 },
     list = { x = 552, y = 226, w = 820, h = 892 },
     model = { x = 1458, y = 250, w = 380, h = 354 },
     name = { x = 1452, y = 640, w = 404 },
     text = { x = 1452, y = 704, w = 404 },
     mapButton = { x = 1447, y = 960, w = 404, h = 62, label = true, font = "GameFontNormal",
-      textColor = look.onAccent, dimColor = { 0.82, 0.80, 0.76 }, offFace = true },
+      textColor = look.onAccent, dimColor = { 0.82, 0.80, 0.76 }, offFace = "off" },
     -- Not in the art: the addon draws it, and only while there are pins to clear.
     clearButton = { x = 1447, y = 1040, w = 404, h = 62, label = true, font = "GameFontNormal",
-      textColor = a, face = true },
+      textColor = a, face = "outline" },
     colors = {
       menu = look.menu, menuBorder = { a[1], a[2], a[3], 0.55 },
       text = look.text, header = a, dim = look.dim, title = a,
       tag = look.tagHex, tagText = look.tagText,
       hover = { 1, 1, 1, 0.07 }, selected = { a[1], a[2], a[3], 0.22 },
-      checkBox = look.well, -- the art has no checkbox, so draw its box
     },
   })
 end
@@ -124,7 +131,7 @@ ns.Themes.selva = panels({
   onAccent = { 0.13, 0.09, 0.02 },
   text = { 0.92, 0.90, 0.82 }, dim = { 0.45, 0.52, 0.48 },
   tagHex = "e8a33d", tagText = { 1, 0.90, 0.78 },
-  menu = { 0.05, 0.09, 0.075, 0.98 }, well = { 0.04, 0.07, 0.06, 1 },
+  menu = { 0.05, 0.09, 0.075, 0.98 },
 })
 
 -- "Hunter": the same panels as a hunter's lodge: dark wood, stitched leather,
@@ -135,7 +142,7 @@ ns.Themes.hunter = panels({
   onAccent = { 0.16, 0.10, 0.03 },
   text = { 0.94, 0.88, 0.77 }, dim = { 0.74, 0.64, 0.54 },
   tagHex = "d9ad5c", tagText = { 1, 0.93, 0.80 },
-  menu = { 0.13, 0.08, 0.05, 0.98 }, well = { 0.09, 0.05, 0.03, 1 },
+  menu = { 0.13, 0.08, 0.05, 0.98 },
 })
 
 ns.DEFAULT_THEME = "hunter"
