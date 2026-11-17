@@ -29,6 +29,15 @@ function ns.LevelText(c)
   return c.min == c.max and tostring(c.min) or (c.min .. "-" .. c.max)
 end
 
+-- Width left for the name once the tag has taken what it needs: the name is
+-- what gets cut short, never the tag.
+function List.NameWidth(available, nameWidth, tagWidth, gap)
+  if tagWidth <= 0 then return math.min(nameWidth, available) end
+  return math.max(0, math.min(nameWidth, available - tagWidth - gap))
+end
+
+local TAG_GAP, PILL_PAD = 6, 5
+
 local function paint(row, data)
   row.data = data
   if not data then row:Hide() return end
@@ -37,8 +46,12 @@ local function paint(row, data)
   local col = ns.Skin.colors
   row.icon:Hide()
   row.selected:Hide()
+  row.tag:SetText("")
+  if row.pill then row.pill:Hide() end
   if not c then
     row:EnableMouse(false)
+    if row.bg then row.bg:Hide() end
+    row.name:SetWidth(row.nameMax + 18)
     row.name:SetText(data.header)
     row.name:SetTextColor(col.header[1], col.header[2], col.header[3])
     row.name:SetPoint("LEFT", 4, 0)
@@ -47,10 +60,24 @@ local function paint(row, data)
     return
   end
   row:EnableMouse(true)
-  local cls = ns.ClsLabel(c.cls)
-  local tag = cls and (" |cff" .. col.tag .. cls .. "|r") or ""
-  row.name:SetText(c.name .. tag)
+  if row.bg then
+    row.bg:Show()
+    row.bg:SetAlpha(c.tame and 1 or 0.45)
+  end
   row.name:SetPoint("LEFT", 22, 0)
+  row.name:SetWidth(0) -- natural width, so it can be measured
+  row.name:SetText(c.name)
+  local cls = ns.ClsLabel(c.cls)
+  local tagW = 0
+  if cls then
+    row.tag:SetText(cls)
+    tagW = row.tag:GetStringWidth() + (row.pill and 2 * PILL_PAD or 0)
+    if row.pill then
+      row.pill:SetWidth(tagW)
+      row.pill:Show()
+    end
+  end
+  row.name:SetWidth(List.NameWidth(row.nameMax, row.name:GetStringWidth(), tagW, TAG_GAP))
   row.level:SetText(ns.LevelText(c))
   row.zone:SetText(ns.ZoneLabel(c))
   local r, g, b = col.text[1], col.text[2], col.text[3]
@@ -87,40 +114,73 @@ function List:SetSelected(c)
   self:Update()
 end
 
+-- A texture showing one slot of the theme's row atlas (see tools/make_rows.py).
+local function slot(parent, layer, art, index, w, h)
+  local t = parent:CreateTexture(nil, layer)
+  t:SetTexture(art.texture)
+  local top = index * art.slotH
+  t:SetTexCoord(0, w / art.texW, top / art.texH, (top + h) / art.texH)
+  return t
+end
+
 local function newRow(parent, width, height)
-  local col = ns.Skin.colors
+  local S = ns.Skin
+  local col, art = S.colors, S.rowArt
   local row = CreateFrame("Button", nil, parent)
   row:SetSize(width, height)
+  row.bg, row.pill = false, false -- only themes with row art have them
 
-  local hl = row:CreateTexture(nil, "HIGHLIGHT")
+  local hl
+  if art then
+    row.bg = slot(row, "BACKGROUND", art, 0, art.rowW, art.rowH)
+    row.bg:SetAllPoints()
+    hl = slot(row, "HIGHLIGHT", art, 1, art.rowW, art.rowH)
+    row.selected = slot(row, "BORDER", art, 2, art.rowW, art.rowH)
+  else
+    hl = row:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetColorTexture(col.hover[1], col.hover[2], col.hover[3], col.hover[4])
+    row.selected = row:CreateTexture(nil, "BACKGROUND")
+    row.selected:SetColorTexture(col.selected[1], col.selected[2], col.selected[3], col.selected[4])
+  end
   hl:SetAllPoints()
-  hl:SetColorTexture(col.hover[1], col.hover[2], col.hover[3], col.hover[4])
-
-  row.selected = row:CreateTexture(nil, "BACKGROUND")
   row.selected:SetAllPoints()
-  row.selected:SetColorTexture(col.selected[1], col.selected[2], col.selected[3], col.selected[4])
 
   row.icon = row:CreateTexture(nil, "ARTWORK")
   row.icon:SetSize(14, 14)
   row.icon:SetPoint("LEFT", 4, 0)
   row.icon:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
 
+  local zoneW, levelW = math.floor(width * 0.36), 44
   row.zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  row.zone:SetPoint("RIGHT", -4, 0)
-  row.zone:SetWidth(math.floor(width * 0.36))
+  row.zone:SetPoint("RIGHT", -6, 0)
+  row.zone:SetWidth(zoneW)
   row.zone:SetJustifyH("LEFT")
   row.zone:SetWordWrap(false)
 
   row.level = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   row.level:SetPoint("RIGHT", row.zone, "LEFT", -6, 0)
-  row.level:SetWidth(44)
+  row.level:SetWidth(levelW)
   row.level:SetJustifyH("LEFT")
 
+  -- Name and tag share what is left of the row; see List.NameWidth.
+  row.nameMax = width - 22 - zoneW - levelW - 24
   row.name = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
   row.name:SetPoint("LEFT", 22, 0)
-  row.name:SetPoint("RIGHT", row.level, "LEFT", -6, 0)
   row.name:SetJustifyH("LEFT")
   row.name:SetWordWrap(false)
+
+  row.tag = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  local tag = col.tagText or { tonumber(col.tag:sub(1, 2), 16) / 255, tonumber(col.tag:sub(3, 4), 16) / 255,
+    tonumber(col.tag:sub(5, 6), 16) / 255 }
+  row.tag:SetTextColor(tag[1], tag[2], tag[3])
+  if art then
+    row.pill = slot(row, "ARTWORK", art, 3, art.pillW, art.pillH)
+    row.pill:SetHeight(height - 6)
+    row.pill:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+    row.tag:SetPoint("LEFT", row.pill, "LEFT", PILL_PAD, 0)
+  else
+    row.tag:SetPoint("LEFT", row.name, "RIGHT", TAG_GAP, 0)
+  end
 
   row:SetScript("OnEnter", function(self)
     if self.data and self.data.creature and List.onEnter then List.onEnter(self.data.creature) end
@@ -136,7 +196,8 @@ end
 
 -- Builds the list inside `parent`, in the theme rectangle `r`.
 function List:Create(parent, r)
-  local rowH = ns.Skin.rowH
+  local S = ns.Skin
+  local rowH, gap = S.rowH, S.rowGap or 0
   local width, height = r.w, r.h
   self.frames, self.rows, self.offset = {}, {}, 0
   local holder = CreateFrame("Frame", nil, parent)
@@ -148,9 +209,10 @@ function List:Create(parent, r)
     self:Update()
   end)
 
-  local barW = 16
+  local scroll = S.scroll
+  local barW = scroll and scroll.width or 16
   for i = 1, math.floor(height / rowH) do
-    local row = newRow(holder, width - barW - 4, rowH)
+    local row = newRow(holder, width - barW - 6, rowH - gap)
     row:SetPoint("TOPLEFT", 0, -(i - 1) * rowH)
     self.frames[i] = row
   end
@@ -158,7 +220,7 @@ function List:Create(parent, r)
   self.empty = holder:CreateFontString(nil, "ARTWORK", "GameFontDisable")
   self.empty:SetPoint("CENTER")
   self.empty:SetText(L.NO_RESULTS)
-  local dim = ns.Skin.colors.dim
+  local dim = S.colors.dim
   self.empty:SetTextColor(dim[1], dim[2], dim[3])
 
   local bar = CreateFrame("Slider", nil, holder)
@@ -170,8 +232,17 @@ function List:Create(parent, r)
   if bar.SetObeyStepOnDrag then bar:SetObeyStepOnDrag(true) end
   local track = bar:CreateTexture(nil, "BACKGROUND")
   track:SetAllPoints()
-  track:SetColorTexture(0, 0, 0, 0.3)
-  bar:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
+  if scroll then
+    -- Slim flat bar in the theme's colors instead of the client's knob.
+    track:SetColorTexture(scroll.track[1], scroll.track[2], scroll.track[3], scroll.track[4])
+    local thumb = bar:CreateTexture(nil, "ARTWORK")
+    thumb:SetColorTexture(scroll.thumb[1], scroll.thumb[2], scroll.thumb[3], scroll.thumb[4])
+    thumb:SetSize(barW, 36)
+    bar:SetThumbTexture(thumb)
+  else
+    track:SetColorTexture(0, 0, 0, 0.3)
+    bar:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
+  end
   bar:SetMinMaxValues(0, 0)
   bar:SetValue(0)
   bar:SetScript("OnValueChanged", function(_, value)
@@ -184,3 +255,13 @@ function List:Create(parent, r)
   self.bar = bar
   self.holder = holder
 end
+
+-- Self-checks ---------------------------------------------------------------
+
+table.insert(ns.tests, { "list: the tag is never cut, the name gives way", function()
+  assert(List.NameWidth(200, 120, 0, 6) == 120)   -- short name, no tag
+  assert(List.NameWidth(200, 320, 0, 6) == 200)   -- long name, no tag: fills the row
+  assert(List.NameWidth(200, 120, 40, 6) == 120)  -- both fit
+  assert(List.NameWidth(200, 180, 40, 6) == 154)  -- name shortened to leave room for the tag
+  assert(List.NameWidth(30, 180, 40, 6) == 0)     -- absurdly narrow row: no negative width
+end })

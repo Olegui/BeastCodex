@@ -67,9 +67,16 @@ end
 -- filter fields, the search field, the close button and both buttons are
 -- part of the art; the addon only puts text and click areas over them.
 ns.Themes.selva = ns.ArtTheme({
-  srcW = 2000, srcH = 1244, W = 960, rowH = 22,
+  srcW = 2000, srcH = 1244, W = 960, rowH = 25,
   texture = "Interface\\AddOns\\BeastCodex\\Art\\Selva",
   texW = 1024, texH = 1024, imgW = 1024, imgH = 637,
+  -- Rounded row boxes, hover, selection glow and tag pill; numbers match tools/make_rows.py.
+  rowGap = 3,
+  rowArt = {
+    texture = "Interface\\AddOns\\BeastCodex\\Art\\SelvaRows",
+    texW = 1024, texH = 256, slotH = 64, rowW = 800, rowH = 44, pillW = 96, pillH = 30,
+  },
+  scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { 0.96, 0.66, 0.25, 0.75 } },
   search = { x = 1436, y = 119, w = 300, h = 38 },
   close = { x = 1832, y = 111, w = 50, h = 50 },
   filters = {
@@ -87,7 +94,7 @@ ns.Themes.selva = ns.ArtTheme({
   clearButton = { x = 1447, y = 1040, w = 404, h = 62, label = true },
   colors = {
     text = { 0.92, 0.90, 0.82 }, header = { 0.96, 0.66, 0.25 }, dim = { 0.45, 0.52, 0.48 },
-    title = { 0.96, 0.66, 0.25 }, tag = "e8a33d",
+    title = { 0.96, 0.66, 0.25 }, tag = "e8a33d", tagText = { 1, 0.90, 0.78 },
     hover = { 1, 1, 1, 0.07 }, selected = { 0.96, 0.66, 0.25, 0.22 },
     checkBox = { 0.04, 0.07, 0.06, 1 }, -- the art has no checkbox, so draw its box
   },

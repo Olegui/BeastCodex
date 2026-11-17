@@ -15,11 +15,18 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP = "Libs"  # third-party libraries are compiled but not executed
 
 STUB = r"""
-local noop = setmetatable({}, {})
-getmetatable(noop).__index = function() return function() return noop end end
-getmetatable(noop).__call = function() return noop end
+-- Every frame, texture and font string is a fresh stub: any method call works
+-- and returns another stub, and fields the addon sets on it stay on that object.
+local mt = {}
+local function new() return setmetatable({}, mt) end
+mt.__index = function(_, key)
+  if key == "GetStringWidth" then return function() return 50 end end -- code does arithmetic on it
+  return function() return new() end
+end
+mt.__call = function() return new() end
+local noop = new()
 function GetLocale() return TEST_LOCALE end
-function CreateFrame() return noop end
+function CreateFrame() return new() end
 function LibStub() return nil end
 function date() return "test" end
 SlashCmdList, UISpecialFrames, C_Timer = {}, {}, noop

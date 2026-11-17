@@ -49,6 +49,7 @@ function UI.Button(parent, r, text, showLabel)
     b.label:SetTextColor(tc[1], tc[2], tc[3])
     b.label:SetText(text)
   else
+    b.label = false -- the art is the face; hovering names the button
     b:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_TOP")
       GameTooltip:SetText(self.tooltip or text)
