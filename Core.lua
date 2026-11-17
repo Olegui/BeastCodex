@@ -4,7 +4,7 @@ local L = ns.L
 ns.tests = {} -- { name, fn } pairs run by /beastcodex selftest
 
 local function defaults()
-  return { minimap = {}, filters = { showUntameable = true, search = "" } }
+  return { minimap = {}, theme = "classic", filters = { showUntameable = true, search = "" } }
 end
 
 -- Returns a usable settings table from whatever was saved: a missing table,
@@ -13,6 +13,7 @@ function ns.SanitizeDB(db, creatures)
   local out = defaults()
   if type(db) ~= "table" then return out end
   if type(db.minimap) == "table" then out.minimap = db.minimap end
+  if type(db.theme) == "string" and ns.Themes[db.theme] then out.theme = db.theme end
 
   local f = type(db.filters) == "table" and db.filters or {}
   local families, zones = {}, {}
@@ -42,6 +43,7 @@ frame:SetScript("OnEvent", function(self, _, name)
 
   BeastCodexDB = ns.SanitizeDB(BeastCodexDB, ns.Creatures)
   ns.db = BeastCodexDB
+  ns.ApplyTheme(ns.db.theme)
 
   local ldb = LibStub("LibDataBroker-1.1", true)
   local icon = LibStub("LibDBIcon-1.0", true)
@@ -61,8 +63,21 @@ end)
 
 SLASH_BEASTCODEX1 = "/beastcodex"
 SlashCmdList.BEASTCODEX = function(msg)
-  if msg and msg:lower():match("^%s*selftest") then
+  msg = (msg or ""):lower()
+  local theme = msg:match("^%s*theme%s*(%S*)")
+  if msg:match("^%s*selftest") then
     if ns.RunSelfTest then ns.RunSelfTest() end
+  elseif theme then
+    -- The window is built once per session, so a theme change reloads the UI.
+    if ns.Themes[theme] then
+      ns.db.theme = theme
+      ReloadUI()
+    else
+      local names = {}
+      for name in pairs(ns.Themes) do names[#names + 1] = name end
+      table.sort(names)
+      print("|cff66cc66Beast Codex|r " .. L.THEME_LIST_FMT:format(ns.themeName, table.concat(names, ", ")))
+    end
   else
     toggle()
   end
@@ -87,6 +102,39 @@ table.insert(ns.tests, { "db: valid filters survive", function()
   local db = ns.SanitizeDB({ minimap = { hide = true }, filters = { family = "wolf", zone = "Feralas", bucket = 2, showUntameable = false, search = "sn" } }, sample)
   assert(db.filters.family == "wolf" and db.filters.zone == "Feralas" and db.filters.bucket == 2)
   assert(db.filters.showUntameable == false and db.filters.search == "sn" and db.minimap.hide == true)
+end })
+
+table.insert(ns.tests, { "db: unknown theme falls back to classic, known theme survives", function()
+  assert(ns.SanitizeDB({ theme = "nope" }, sample).theme == "classic")
+  assert(ns.SanitizeDB({ theme = 5 }, sample).theme == "classic")
+  assert(ns.SanitizeDB({ theme = "classic" }, sample).theme == "classic")
+  for name in pairs(ns.Themes) do assert(ns.SanitizeDB({ theme = name }, sample).theme == name) end
+end })
+
+table.insert(ns.tests, { "theme: art measurements scale from source pixels to window units", function()
+  local t = ns.ArtTheme({ srcW = 2000, srcH = 1000, W = 1000, rowH = 20, colors = { text = { 1, 1, 1 } },
+    list = { x = 100, y = 50, w = 200, h = 20 },
+    filters = { { x = 10, y = 20, w = 30, h = 40, label = { x = 2, y = 4 } } },
+    check = { x = 8, y = 8, w = 16, h = 16, labelW = 100 } })
+  assert(t.W == 1000 and t.H == 500 and t.rowH == 20)
+  assert(t.list.x == 50 and t.list.y == 25 and t.list.w == 100 and t.list.h == 10)
+  assert(t.filters[1].h == 20 and t.filters[1].label.x == 1 and t.filters[1].label.y == 2)
+  assert(t.check.labelW == 50 and t.colors.text[1] == 1)
+end })
+
+table.insert(ns.tests, { "theme: every theme defines every rectangle the window needs", function()
+  for name, t in pairs(ns.Themes) do
+    for _, key in ipairs({ "search", "close", "check", "list", "model", "name", "text", "mapButton", "clearButton" }) do
+      assert(type(t[key]) == "table" and t[key].x and t[key].y, name .. " lacks " .. key)
+    end
+    assert(#t.filters == 3, name .. " needs 3 filters")
+    assert(t.W and t.H and t.rowH and t.list.h >= t.rowH, name .. " size")
+    for _, key in ipairs({ "text", "header", "dim", "title", "hover", "selected" }) do
+      assert(type(t.colors[key]) == "table", name .. " lacks color " .. key)
+    end
+    assert(type(t.colors.tag) == "string" and #t.colors.tag == 6, name .. " tag color")
+    if t.texture then assert(t.imgW and t.imgH and t.texW and t.texH, name .. " texture size") end
+  end
 end })
 
 table.insert(ns.tests, { "locale: unknown key falls back to the key", function()

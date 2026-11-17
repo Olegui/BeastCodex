@@ -4,24 +4,81 @@ local L = ns.L
 local Window = {}
 ns.Window = Window
 
-local GAP = 12
+-- Small widget helpers shared by the window and the detail panel. They are
+-- plain frames (no Blizzard templates), so UI-skinning addons leave them
+-- alone and a theme's art can show through.
+local UI = {}
+ns.UI = UI
 
--- A button that opens a scrolling radio menu. `options()` returns { {value, label}, ... };
--- the first entry of every menu is "All" (value nil).
-local function newMenuButton(parent, title, key, options, onChange)
-  local label = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-  label:SetText(title)
+function UI.Place(frame, parent, r)
+  frame:ClearAllPoints()
+  frame:SetPoint("TOPLEFT", parent, "TOPLEFT", r.x, -r.y)
+  if r.w then frame:SetSize(r.w, r.h or 20) end
+end
 
-  local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-  button:SetSize(ns.Skin.filterW, 22)
-  button:SetPoint("TOPLEFT", label, "BOTTOMLEFT", 0, -3)
+function UI.Text(parent, r, font, color, justify)
+  local fs = parent:CreateFontString(nil, "ARTWORK", font or "GameFontHighlightSmall")
+  fs:SetPoint("TOPLEFT", parent, "TOPLEFT", r.x, -r.y)
+  if r.w then fs:SetWidth(r.w) end
+  fs:SetJustifyH(justify or "LEFT")
+  fs:SetJustifyV("TOP")
+  if color then fs:SetTextColor(color[1], color[2], color[3]) end
+  return fs
+end
+
+-- A clickable area. With `showLabel` it carries centered text; without it the
+-- art underneath is the button face and `tooltip` names it on hover.
+function UI.Button(parent, r, text, showLabel)
+  local c = ns.Skin.colors
+  local b = CreateFrame("Button", nil, parent)
+  UI.Place(b, parent, r)
+  if c.control and showLabel then
+    local bg = b:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+  end
+  local hl = b:CreateTexture(nil, "HIGHLIGHT")
+  hl:SetAllPoints()
+  hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
+  if showLabel then
+    b.label = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    b.label:SetPoint("LEFT", 6, 0)
+    b.label:SetPoint("RIGHT", -6, 0)
+    b.label:SetWordWrap(false)
+    b.label:SetTextColor(c.text[1], c.text[2], c.text[3])
+    b.label:SetText(text)
+  else
+    b:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_TOP")
+      GameTooltip:SetText(self.tooltip or text)
+      GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  end
+  b.tooltip = text
+  function b:SetActive(on)
+    self:EnableMouse(on)
+    self:SetAlpha((on or not showLabel) and 1 or 0.4)
+  end
+  return b
+end
+
+-- A filter button that opens a scrolling radio menu. `options()` returns
+-- { {value, label}, ... }; every menu starts with "All" (value nil).
+local function newFilter(parent, r, title, key, options, onChange)
+  local c = ns.Skin.colors
+  if r.label then
+    UI.Text(parent, r.label, "GameFontNormalSmall", c.header):SetText(title)
+  end
+  local button = UI.Button(parent, r, L.ALL, true)
 
   local function refresh()
     local text = L.ALL
     for _, o in ipairs(options()) do
       if o[1] == ns.db.filters[key] then text = o[2] end
     end
-    button:SetText(text)
+    -- Without a separate label the button itself has to say which filter it is.
+    button.label:SetText(r.label and text or (title .. ": " .. text))
   end
 
   button:SetScript("OnClick", function(self)
@@ -43,7 +100,44 @@ local function newMenuButton(parent, title, key, options, onChange)
   end)
 
   refresh()
-  return label, button
+  return button
+end
+
+local function newCheck(parent, r, text, checked, onChange)
+  local c = ns.Skin.colors
+  local b = CreateFrame("Button", nil, parent)
+  UI.Place(b, parent, r)
+  if c.control then
+    local bg = b:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+  end
+  local mark = b:CreateTexture(nil, "ARTWORK")
+  mark:SetPoint("CENTER")
+  mark:SetSize(r.w * 1.5, r.h * 1.5)
+  mark:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+  mark:SetShown(checked)
+  if r.labelW then
+    local label = b:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetPoint("LEFT", b, "RIGHT", 6, 0)
+    label:SetWidth(r.labelW)
+    label:SetJustifyH("LEFT")
+    label:SetTextColor(c.text[1], c.text[2], c.text[3])
+    label:SetText(text)
+  else
+    b:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_TOP")
+      GameTooltip:SetText(text)
+      GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  end
+  b:SetScript("OnClick", function()
+    checked = not checked
+    mark:SetShown(checked)
+    onChange(checked)
+  end)
+  return b
 end
 
 local function familyOptions()
@@ -77,12 +171,14 @@ function Window:Refresh()
   if not self.frame then return end
   local rows, count = ns.Filter.Apply(ns.Creatures, ns.db.filters)
   ns.List:SetRows(rows)
-  self.count:SetText(L.COUNT_FMT:format(count, #ns.Creatures))
+  if self.count then self.count:SetText(L.COUNT_FMT:format(count, #ns.Creatures)) end
 end
 
 function Window:Create()
   local S = ns.Skin
-  local f = CreateFrame("Frame", "BeastCodexFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+  local c = S.colors
+  local f = CreateFrame("Frame", "BeastCodexFrame", UIParent,
+    S.backdrop and BackdropTemplateMixin and "BackdropTemplate" or nil)
   f:SetSize(S.W, S.H)
   f:SetPoint("CENTER")
   f:SetFrameStrata("HIGH")
@@ -95,13 +191,12 @@ function Window:Create()
   tinsert(UISpecialFrames, "BeastCodexFrame") -- Esc closes it
   f:Hide()
 
-  -- Provisional frame until Art/Frame.tga exists.
   if S.texture then
     local art = f:CreateTexture(nil, "BACKGROUND")
     art:SetAllPoints()
     art:SetTexture(S.texture)
-    art:SetTexCoord(0, S.W / 1024, 0, S.H / 1024)
-  elseif f.SetBackdrop then
+    art:SetTexCoord(0, S.imgW / S.texW, 0, S.imgH / S.texH)
+  elseif S.backdrop and f.SetBackdrop then
     f:SetBackdrop({
       bgFile = "Interface\\Buttons\\WHITE8X8",
       edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -111,17 +206,25 @@ function Window:Create()
     f:SetBackdropBorderColor(0.6, 0.45, 0.25, 1)
   end
 
-  local title = f:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-  title:SetPoint("TOPLEFT", S.inset.l, -(S.inset.t - 44))
-  title:SetText(L.TITLE)
+  if S.title then
+    UI.Text(f, S.title, "GameFontNormalLarge", c.title):SetText(L.TITLE)
+  end
 
-  local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  close:SetPoint("TOPRIGHT", -(S.inset.r - 30), -(S.inset.t - 54))
+  local close = UI.Button(f, S.close, CLOSE or "Close", S.close.text ~= nil)
+  if close.label then close.label:SetText(S.close.text) end
+  close:SetScript("OnClick", function() f:Hide() end)
 
-  local search = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
-  search:SetSize(180, 20)
-  search:SetPoint("TOPRIGHT", -(S.inset.r + 24), -(S.inset.t - 42))
+  local search = CreateFrame("EditBox", nil, f)
+  UI.Place(search, f, S.search)
+  search:SetFontObject("GameFontHighlightSmall")
+  search:SetTextColor(c.text[1], c.text[2], c.text[3])
+  search:SetTextInsets(6, 6, 0, 0)
   search:SetAutoFocus(false)
+  if c.control then
+    local bg = search:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+  end
   search:SetText(ns.db.filters.search or "")
   search:SetScript("OnEscapePressed", search.ClearFocus)
   search:SetScript("OnEnterPressed", search.ClearFocus)
@@ -129,51 +232,32 @@ function Window:Create()
     ns.db.filters.search = self:GetText()
     Window:Refresh()
   end)
-  local searchLabel = f:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-  searchLabel:SetPoint("RIGHT", search, "LEFT", -10, 0)
-  searchLabel:SetText(L.SEARCH)
+  if S.search.label then
+    local label = f:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    label:SetPoint("RIGHT", search, "LEFT", -8, 0)
+    label:SetTextColor(c.header[1], c.header[2], c.header[3])
+    label:SetText(L.SEARCH)
+  end
 
-  -- Left column: filters
   local onChange = function() Window:Refresh() end
-  local x, y = S.inset.l, -S.inset.t
   local specs = {
     { L.FILTER_FAMILY, "family", familyOptions },
     { L.FILTER_ZONE, "zone", zoneOptions },
     { L.FILTER_LEVEL, "bucket", bucketOptions },
   }
-  for _, spec in ipairs(specs) do
-    local label = newMenuButton(f, spec[1], spec[2], spec[3], onChange)
-    label:SetPoint("TOPLEFT", x, y)
-    y = y - 50
+  for i, spec in ipairs(specs) do
+    newFilter(f, S.filters[i], spec[1], spec[2], spec[3], onChange)
   end
 
-  local check = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-  check:SetSize(24, 24)
-  check:SetPoint("TOPLEFT", x - 4, y)
-  check:SetChecked(ns.db.filters.showUntameable)
-  check:SetScript("OnClick", function(self)
-    ns.db.filters.showUntameable = self:GetChecked() and true or false
+  newCheck(f, S.check, L.SHOW_UNTAMEABLE, ns.db.filters.showUntameable, function(on)
+    ns.db.filters.showUntameable = on
     Window:Refresh()
   end)
-  local checkText = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  checkText:SetPoint("LEFT", check, "RIGHT", 2, 0)
-  checkText:SetWidth(S.filterW - 26)
-  checkText:SetJustifyH("LEFT")
-  checkText:SetText(L.SHOW_UNTAMEABLE)
 
-  self.count = f:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-  self.count:SetPoint("BOTTOMLEFT", S.inset.l, S.inset.b)
-  self.count:SetWidth(S.filterW)
-  self.count:SetJustifyH("LEFT")
+  self.count = S.count and UI.Text(f, S.count, "GameFontDisableSmall", c.dim) or nil
 
-  -- Centre column: the list. Right column belongs to UI/Detail.lua.
-  local contentH = S.H - S.inset.t - S.inset.b
-  local listX = S.inset.l + S.filterW + GAP
-  local listW = S.W - S.inset.l - S.inset.r - S.filterW - S.detailW - 2 * GAP
-  ns.List:Create(f, listX, -S.inset.t, listW, contentH)
-  if ns.Detail and ns.Detail.Create then
-    ns.Detail:Create(f, listX + listW + GAP, -S.inset.t, S.detailW, contentH)
-  end
+  ns.List:Create(f, S.list)
+  ns.Detail:Create(f)
 
   self.frame = f
 end

@@ -22,10 +22,32 @@ function GetLocale() return TEST_LOCALE end
 function CreateFrame() return noop end
 function LibStub() return nil end
 function date() return "test" end
-SlashCmdList, UISpecialFrames, C_Timer, C_Map = {}, {}, noop, noop
+SlashCmdList, UISpecialFrames, C_Timer = {}, {}, noop
+C_Map = { GetMapInfo = function(id) return { name = "Map " .. id } end }
 WorldMapFrame, UIParent, GameTooltip = noop, noop, noop
 function print() end
+function tinsert(t, v) table.insert(t, v) end
+function ReloadUI() end
 """
+
+
+SMOKE = """function(ns)
+    -- Builds and refreshes the window under every theme against stub frames.
+    local problems = {}
+    for name in pairs(ns.Themes) do
+        ns.db = ns.SanitizeDB({ theme = name }, ns.Creatures)
+        ns.ApplyTheme(name)
+        ns.Window.frame = nil
+        local ok, err = pcall(function()
+            ns.Window:Create()
+            ns.Window:Refresh()
+            ns.Detail:Pin(ns.Creatures[1])
+            ns.Detail:Preview(nil)
+        end)
+        if not ok then problems[#problems + 1] = "window under theme " .. name .. ": " .. tostring(err) end
+    end
+    return table.concat(problems, "\\n")
+end"""
 
 
 def run_locale(locale):
@@ -62,6 +84,9 @@ def run_locale(locale):
         return total, table.concat(failed, "\\n")
     end""")
     total, failed = run(ns)
+    smoke = lua.eval(SMOKE)(ns)
+    if smoke:
+        failed = (failed + "\n" if failed else "") + smoke
     fails = [l for l in failed.split("\n") if l]
     for l in fails:
         print("FAIL", l)

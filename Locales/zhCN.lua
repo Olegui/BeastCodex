@@ -6,6 +6,7 @@ local L = ns.L
 -- TITLE and LEVEL_UNKNOWN are the same in every language and stay in enUS.lua.
 
 L.MINIMAP_HINT = "点击打开图鉴。"
+L.THEME_LIST_FMT = "主题：%s。可用：%s。输入 /beastcodex theme <名称>。"
 L.SELFTEST_FMT = "自检：%d/%d 通过。"
 L.FILTER_FAMILY = "种类"
 L.FILTER_ZONE = "区域"

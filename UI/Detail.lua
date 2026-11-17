@@ -16,7 +16,7 @@ function Detail.Lines(c)
   if zone ~= "" then lines[#lines + 1] = zone end
   if not c.tame then
     lines[#lines + 1] = "|cffff5555" .. L.UNTAMEABLE .. "|r"
-    if c.note then lines[#lines + 1] = "|cffaaaaaa" .. c.note .. "|r" end
+    if c.note then lines[#lines + 1] = c.note end
   end
   if c.abilities and #c.abilities > 0 then
     local names = {}
@@ -46,16 +46,16 @@ function Detail:Show(c)
     pcall(self.model.ClearModel, self.model)
     self.name:SetText("")
     self.text:SetText(L.HOVER_HINT)
-    self.mapButton:Hide()
-    self.unknown:Hide()
+    self.mapButton:SetActive(false)
     return
   end
   showModel(self.model, c)
   self.name:SetText(c.name)
-  self.text:SetText(table.concat(Detail.Lines(c), "\n"))
-  local can = ns.Map and ns.Map.CanShow and ns.Map.CanShow(c)
-  self.mapButton:SetShown(can and true or false)
-  self.unknown:SetShown(not can)
+  local lines = Detail.Lines(c)
+  local can = ns.Map.CanShow(c)
+  if not can then lines[#lines + 1] = L.LOCATION_UNKNOWN end
+  self.text:SetText(table.concat(lines, "\n"))
+  self.mapButton:SetActive(can)
 end
 
 function Detail:Preview(c)
@@ -69,19 +69,17 @@ function Detail:Pin(c)
 end
 
 function Detail:UpdateClearButton()
-  if self.clearButton then
-    self.clearButton:SetShown(ns.Map and ns.Map.HasPins and ns.Map.HasPins() or false)
-  end
+  if self.clearButton then self.clearButton:SetActive(ns.Map.HasPins()) end
 end
 
-function Detail:Create(parent, x, y, width, height)
-  local f = CreateFrame("Frame", nil, parent)
-  f:SetPoint("TOPLEFT", x, y)
-  f:SetSize(width, height)
+-- Builds the panel from the theme's rectangles, as children of the window.
+function Detail:Create(parent)
+  local S = ns.Skin
+  local c = S.colors
+  local UI = ns.UI
 
-  local model = CreateFrame("PlayerModel", nil, f)
-  model:SetPoint("TOPLEFT")
-  model:SetSize(width, 170)
+  local model = CreateFrame("PlayerModel", nil, parent)
+  UI.Place(model, parent, S.model)
   local angle = 0.5
   model:SetScript("OnUpdate", function(self, elapsed)
     angle = angle + elapsed * 0.6
@@ -89,53 +87,33 @@ function Detail:Create(parent, x, y, width, height)
   end)
   self.model = model
 
-  self.name = f:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-  self.name:SetPoint("TOPLEFT", model, "BOTTOMLEFT", 0, -8)
-  self.name:SetWidth(width)
-  self.name:SetJustifyH("LEFT")
-
-  self.text = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  self.text:SetPoint("TOPLEFT", self.name, "BOTTOMLEFT", 0, -6)
-  self.text:SetWidth(width)
-  self.text:SetJustifyH("LEFT")
-  self.text:SetJustifyV("TOP")
+  self.name = UI.Text(parent, S.name, "GameFontNormalLarge", c.title, S.name.center and "CENTER" or "LEFT")
+  self.name:SetWordWrap(false)
+  self.text = UI.Text(parent, S.text, "GameFontHighlightSmall", c.text)
   self.text:SetSpacing(3)
 
-  local mapButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  mapButton:SetSize(width, 24)
-  mapButton:SetPoint("BOTTOMLEFT", 0, 28)
-  mapButton:SetText(L.SHOW_ON_MAP)
-  mapButton:SetScript("OnClick", function()
-    local c = self.shown
-    if c and ns.Map and ns.Map.Show then
-      self:Pin(c)
-      ns.Map.Show(c)
+  self.mapButton = UI.Button(parent, S.mapButton, L.SHOW_ON_MAP, S.mapButton.label)
+  self.mapButton:SetScript("OnClick", function()
+    local creature = self.shown
+    if creature then
+      self:Pin(creature)
+      ns.Map.Show(creature)
       self:UpdateClearButton()
     end
   end)
-  self.mapButton = mapButton
 
-  self.unknown = f:CreateFontString(nil, "ARTWORK", "GameFontDisable")
-  self.unknown:SetPoint("BOTTOMLEFT", 0, 34)
-  self.unknown:SetWidth(width)
-  self.unknown:SetJustifyH("LEFT")
-  self.unknown:SetText(L.LOCATION_UNKNOWN)
-
-  local clear = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  clear:SetSize(width, 22)
-  clear:SetPoint("BOTTOMLEFT", 0, 0)
-  clear:SetText(L.CLEAR_PINS)
-  clear:SetScript("OnClick", function()
-    if ns.Map and ns.Map.Clear then ns.Map.Clear() end
+  self.clearButton = UI.Button(parent, S.clearButton, L.CLEAR_PINS, S.clearButton.label)
+  self.clearButton:SetScript("OnClick", function()
+    ns.Map.Clear()
     self:UpdateClearButton()
   end)
-  self.clearButton = clear
 
-  self.frame = f
-  ns.List.onEnter = function(c) self:Preview(c) end
+  self.frame = parent
+  ns.List.onEnter = function(creature) self:Preview(creature) end
   ns.List.onLeave = function() self:Preview(nil) end
-  ns.List.onClick = function(c) self:Pin(c) end
+  ns.List.onClick = function(creature) self:Pin(creature) end
 
+  self.pinned = nil
   self.shown = false -- force the first Show(nil) to paint the hint
   self:Show(nil)
   self:UpdateClearButton()

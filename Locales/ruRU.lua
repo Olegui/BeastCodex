@@ -6,6 +6,7 @@ local L = ns.L
 -- TITLE and LEVEL_UNKNOWN are the same in every language and stay in enUS.lua.
 
 L.MINIMAP_HINT = "Щёлкните, чтобы открыть кодекс."
+L.THEME_LIST_FMT = "тема: %s. Доступны: %s. Введите /beastcodex theme <название>."
 L.SELFTEST_FMT = "самопроверка: пройдено %d из %d."
 L.FILTER_FAMILY = "Семейство"
 L.FILTER_ZONE = "Зона"

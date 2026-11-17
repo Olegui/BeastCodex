@@ -191,6 +191,29 @@ Estas são decisões minhas. O dono pode trocar qualquer uma.
 - Ordem: dados, depois addon funcionando, depois arte. A versão 1 só é
   publicada com a arte.
 
+### Mudança de 2026-11-17: arte primeiro, dois temas
+
+Decisão do dono, depois de ver o addon funcionando: a arte vem antes da
+disposição, e não o contrário. Ele gerou dois conceitos no Nano Banana e
+quer os dois como temas para testar no jogo.
+
+- **Tomo:** livro de caçador aberto sobre uma mesa, pergaminho, texto escuro.
+- **Selva:** interface moderna de painéis verde-escuros com detalhe âmbar e
+  folhas tropicais nas bordas, texto claro.
+
+O que isso muda em relação ao que está escrito acima:
+
+- A janela deixa de ter medidas fixas próprias. Cada tema traz a sua
+  textura, as posições de cada área (medidas na imagem) e as cores de texto.
+  `Skin.lua` guarda os temas; `UI/*.lua` só lê posições e cores de lá.
+- Um tema "classic", sem arte, continua existindo como reserva.
+- Troca de tema por `/beastcodex theme <nome>`, que recarrega a interface.
+- Botões, campos e caixa de marcar são do próprio addon (sem modelos da
+  Blizzard), para a arte aparecer e o FlareUI não repintá-los.
+- A imagem de cada tema precisa de uma versão limpa (sem texto nem animal,
+  fundo magenta), gerada pelo dono a partir do conceito.
+- `docs/art-brief.md` (moldura única de 896 x 560) ficou obsoleto.
+
 ### Publicação e créditos
 
 - Repositório GitHub privado até a publicação: `Olegui/BeastCodex`, já

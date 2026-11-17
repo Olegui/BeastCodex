@@ -6,6 +6,7 @@ local L = ns.L
 -- TITLE and LEVEL_UNKNOWN are the same in every language and stay in enUS.lua.
 
 L.MINIMAP_HINT = "클릭하여 도감을 엽니다."
+L.THEME_LIST_FMT = "테마: %s. 사용 가능: %s. /beastcodex theme <이름> 을 입력하세요."
 L.SELFTEST_FMT = "자가 점검: %d/%d 통과."
 L.FILTER_FAMILY = "계열"
 L.FILTER_ZONE = "지역"

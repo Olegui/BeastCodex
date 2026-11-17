@@ -5,6 +5,7 @@ local ADDON, ns = ...
 ns.L = setmetatable({
   TITLE = "Beast Codex",
   MINIMAP_HINT = "Click to open the codex.",
+  THEME_LIST_FMT = "theme: %s. Available: %s. Use /beastcodex theme <name>.",
   SELFTEST_FMT = "self-test: %d of %d passed.",
 
   FILTER_FAMILY = "Family", FILTER_ZONE = "Zone", FILTER_LEVEL = "Level",

@@ -34,12 +34,13 @@ local function paint(row, data)
   if not data then row:Hide() return end
   row:Show()
   local c = data.creature
+  local col = ns.Skin.colors
   row.icon:Hide()
   row.selected:Hide()
   if not c then
     row:EnableMouse(false)
     row.name:SetText(data.header)
-    row.name:SetTextColor(1, 0.82, 0)
+    row.name:SetTextColor(col.header[1], col.header[2], col.header[3])
     row.name:SetPoint("LEFT", 4, 0)
     row.level:SetText("")
     row.zone:SetText("")
@@ -47,14 +48,14 @@ local function paint(row, data)
   end
   row:EnableMouse(true)
   local cls = ns.ClsLabel(c.cls)
-  local tag = cls and (" |cff7fb2ff" .. cls .. "|r") or ""
+  local tag = cls and (" |cff" .. col.tag .. cls .. "|r") or ""
   row.name:SetText(c.name .. tag)
   row.name:SetPoint("LEFT", 22, 0)
   row.level:SetText(ns.LevelText(c))
   row.zone:SetText(ns.ZoneLabel(c))
-  local r, g, b = 1, 1, 1
+  local r, g, b = col.text[1], col.text[2], col.text[3]
   if not c.tame then
-    r, g, b = 0.5, 0.5, 0.5
+    r, g, b = col.dim[1], col.dim[2], col.dim[3]
     row.icon:Show()
   end
   row.name:SetTextColor(r, g, b)
@@ -87,16 +88,17 @@ function List:SetSelected(c)
 end
 
 local function newRow(parent, width, height)
+  local col = ns.Skin.colors
   local row = CreateFrame("Button", nil, parent)
   row:SetSize(width, height)
 
   local hl = row:CreateTexture(nil, "HIGHLIGHT")
   hl:SetAllPoints()
-  hl:SetColorTexture(1, 1, 1, 0.12)
+  hl:SetColorTexture(col.hover[1], col.hover[2], col.hover[3], col.hover[4])
 
   row.selected = row:CreateTexture(nil, "BACKGROUND")
   row.selected:SetAllPoints()
-  row.selected:SetColorTexture(1, 0.82, 0, 0.18)
+  row.selected:SetColorTexture(col.selected[1], col.selected[2], col.selected[3], col.selected[4])
 
   row.icon = row:CreateTexture(nil, "ARTWORK")
   row.icon:SetSize(14, 14)
@@ -105,7 +107,7 @@ local function newRow(parent, width, height)
 
   row.zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   row.zone:SetPoint("RIGHT", -4, 0)
-  row.zone:SetWidth(130)
+  row.zone:SetWidth(math.floor(width * 0.36))
   row.zone:SetJustifyH("LEFT")
   row.zone:SetWordWrap(false)
 
@@ -132,11 +134,13 @@ local function newRow(parent, width, height)
   return row
 end
 
--- Builds the list inside `parent`, anchored at its top-left corner offset.
-function List:Create(parent, x, y, width, height)
+-- Builds the list inside `parent`, in the theme rectangle `r`.
+function List:Create(parent, r)
   local rowH = ns.Skin.rowH
+  local width, height = r.w, r.h
+  self.frames, self.rows, self.offset = {}, {}, 0
   local holder = CreateFrame("Frame", nil, parent)
-  holder:SetPoint("TOPLEFT", x, y)
+  holder:SetPoint("TOPLEFT", parent, "TOPLEFT", r.x, -r.y)
   holder:SetSize(width, height)
   holder:EnableMouseWheel(true)
   holder:SetScript("OnMouseWheel", function(_, delta)
@@ -154,6 +158,8 @@ function List:Create(parent, x, y, width, height)
   self.empty = holder:CreateFontString(nil, "ARTWORK", "GameFontDisable")
   self.empty:SetPoint("CENTER")
   self.empty:SetText(L.NO_RESULTS)
+  local dim = ns.Skin.colors.dim
+  self.empty:SetTextColor(dim[1], dim[2], dim[3])
 
   local bar = CreateFrame("Slider", nil, holder)
   bar:SetOrientation("VERTICAL")
