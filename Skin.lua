@@ -62,6 +62,37 @@ function ns.ArtTheme(t)
   return theme
 end
 
+-- "Selva": modern dark-green panels with amber accents and tropical leaves.
+-- Measured on the concept image scaled to 2000 px wide. The title, the three
+-- filter fields, the search field, the close button and both buttons are
+-- part of the art; the addon only puts text and click areas over them.
+ns.Themes.selva = ns.ArtTheme({
+  srcW = 2000, srcH = 1244, W = 960, rowH = 22,
+  texture = "Interface\\AddOns\\BeastCodex\\Art\\Selva",
+  texW = 1024, texH = 1024, imgW = 1024, imgH = 637,
+  search = { x = 1436, y = 119, w = 300, h = 38 },
+  close = { x = 1832, y = 111, w = 50, h = 50 },
+  filters = {
+    { x = 164, y = 266, w = 270, h = 53, label = { x = 164, y = 234 } },
+    { x = 164, y = 376, w = 270, h = 53, label = { x = 164, y = 344 } },
+    { x = 164, y = 487, w = 270, h = 53, label = { x = 164, y = 455 } },
+  },
+  check = { x = 166, y = 580, w = 30, h = 30, labelW = 250 },
+  count = { x = 166, y = 1084, w = 310 },
+  list = { x = 552, y = 226, w = 820, h = 892 },
+  model = { x = 1458, y = 250, w = 380, h = 354 },
+  name = { x = 1452, y = 640, w = 404 },
+  text = { x = 1452, y = 704, w = 404 },
+  mapButton = { x = 1447, y = 960, w = 404, h = 62, label = true, textColor = { 0.10, 0.08, 0.03 } },
+  clearButton = { x = 1447, y = 1040, w = 404, h = 62, label = true },
+  colors = {
+    text = { 0.92, 0.90, 0.82 }, header = { 0.96, 0.66, 0.25 }, dim = { 0.45, 0.52, 0.48 },
+    title = { 0.96, 0.66, 0.25 }, tag = "e8a33d",
+    hover = { 1, 1, 1, 0.07 }, selected = { 0.96, 0.66, 0.25, 0.22 },
+    checkBox = { 0.04, 0.07, 0.06, 1 }, -- the art has no checkbox, so draw its box
+  },
+})
+
 function ns.ApplyTheme(name)
   if not ns.Themes[name] then name = "classic" end
   ns.themeName = name

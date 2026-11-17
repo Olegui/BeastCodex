@@ -45,7 +45,8 @@ function UI.Button(parent, r, text, showLabel)
     b.label:SetPoint("LEFT", 6, 0)
     b.label:SetPoint("RIGHT", -6, 0)
     b.label:SetWordWrap(false)
-    b.label:SetTextColor(c.text[1], c.text[2], c.text[3])
+    local tc = r.textColor or c.text
+    b.label:SetTextColor(tc[1], tc[2], tc[3])
     b.label:SetText(text)
   else
     b:SetScript("OnEnter", function(self)
@@ -107,10 +108,11 @@ local function newCheck(parent, r, text, checked, onChange)
   local c = ns.Skin.colors
   local b = CreateFrame("Button", nil, parent)
   UI.Place(b, parent, r)
-  if c.control then
+  local box = c.checkBox or c.control
+  if box then
     local bg = b:CreateTexture(nil, "BACKGROUND")
     bg:SetAllPoints()
-    bg:SetColorTexture(c.control[1], c.control[2], c.control[3], c.control[4])
+    bg:SetColorTexture(box[1], box[2], box[3], box[4])
   end
   local mark = b:CreateTexture(nil, "ARTWORK")
   mark:SetPoint("CENTER")
