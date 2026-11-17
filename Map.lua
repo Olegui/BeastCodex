@@ -40,7 +40,7 @@ local function acquire()
     pin:SetScript("OnEnter", function(self)
       if not current then return end
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-      GameTooltip:SetText(current.name)
+      GameTooltip:SetText(ns.LocalName(current))
       GameTooltip:Show()
     end)
     pin:SetScript("OnLeave", function() GameTooltip:Hide() end)

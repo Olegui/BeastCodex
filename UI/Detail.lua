@@ -70,9 +70,24 @@ function ns.Preload()
     if not c then
       ticker:Cancel()
       warm:Hide()
+      -- Names were requested above; a moment later the client has them. Collect
+      -- them, note how many came back (readable after a /reload), repaint.
+      C_Timer.After(3, function()
+        local known, sample = 0, {}
+        for _, creature in ipairs(ns.Creatures) do
+          local name = ns.LocalName(creature)
+          if ns.KnownLocalName(creature) then
+            known = known + 1
+            if #sample < 5 and name ~= creature.name then sample[#sample + 1] = creature.name .. " = " .. name end
+          end
+        end
+        ns.db.names = { known = known, total = #ns.Creatures, sample = sample, locale = GetLocale() }
+        ns.Window:Refresh()
+      end)
       return
     end
     pcall(function() warm:ClearModel() warm:SetCreature(c.id) end)
+    ns.LocalName(c)
   end)
 end
 
@@ -88,7 +103,7 @@ function Detail:Show(c)
     return
   end
   showModel(self.model, c)
-  self.name:SetText(c.name)
+  self.name:SetText(ns.LocalName(c))
   local lines = Detail.Lines(c)
   local can = ns.Map.CanShow(c)
   self.text:SetText(table.concat(lines, "\n"))

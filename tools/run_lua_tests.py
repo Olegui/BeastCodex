@@ -35,6 +35,12 @@ SlashCmdList, UISpecialFrames, C_Timer = {}, {}, noop
 C_Map = { GetMapInfo = function(id) return { name = "Map " .. id } end }
 WorldMapFrame, UIParent, GameTooltip = noop, noop, noop
 function print() end
+C_TooltipInfo = { GetHyperlink = function(link)
+  local id = link:match("^unit:Creature%-0%-0%-0%-0%-(%d+)%-0000000000$")
+  if not id then error("malformed creature link: " .. tostring(link)) end
+  if tonumber(id) % 2 == 0 then return { lines = { { leftText = "Nome " .. id } } } end
+  return { lines = {} }                                        -- not fetched yet
+end }
 function tinsert(t, v) table.insert(t, v) end
 function ReloadUI() end
 """

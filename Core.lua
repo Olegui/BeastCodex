@@ -18,6 +18,7 @@ function ns.SanitizeDB(db, creatures)
   -- Diagnostic results are kept so they survive any number of reloads until read.
   if type(db.selftest) == "table" then out.selftest = db.selftest end
   if type(db.modelscan) == "table" then out.modelscan = db.modelscan end
+  if type(db.names) == "table" then out.names = db.names end
 
   local f = type(db.filters) == "table" and db.filters or {}
   local families, zones = {}, {}
@@ -34,6 +35,36 @@ function ns.SanitizeDB(db, creatures)
   if type(f.onlyLocated) == "boolean" then out.filters.onlyLocated = f.onlyLocated end
   if type(f.search) == "string" then out.filters.search = f.search end
   return out
+end
+
+-- Creature names in the data are English. The client knows each creature's
+-- name in its own language and gives it for a creature link, fetching it
+-- from the server the first time it is asked (so the first answer can be
+-- empty). Names are cached per session; English is the fallback.
+local localNames = {}
+
+local function clientName(id)
+  local link = ("unit:Creature-0-0-0-0-%d-0000000000"):format(id)
+  if not (C_TooltipInfo and C_TooltipInfo.GetHyperlink) then return nil end
+  local ok, data = pcall(C_TooltipInfo.GetHyperlink, link)
+  local line = ok and type(data) == "table" and data.lines and data.lines[1]
+  local text = line and line.leftText
+  if type(text) == "string" and text ~= "" then return text end
+  return nil
+end
+
+-- The name already fetched for this creature, or nil. Never asks the client.
+function ns.KnownLocalName(c)
+  return localNames[c.id]
+end
+
+-- The creature's name in the client's language when available, else English.
+function ns.LocalName(c)
+  local name = localNames[c.id]
+  if name then return name end
+  name = clientName(c.id)
+  if name then localNames[c.id] = name end
+  return name or c.name
 end
 
 local function toggle()
@@ -165,6 +196,25 @@ table.insert(ns.tests, { "db: diagnostic results survive a reload", function()
   local db = ns.SanitizeDB({ modelscan = { total = 3 }, selftest = { passed = 1 }, junk = { 1 } }, sample)
   assert(db.modelscan.total == 3 and db.selftest.passed == 1 and db.junk == nil)
   assert(ns.SanitizeDB({ modelscan = "x" }, sample).modelscan == nil)
+end })
+
+table.insert(ns.tests, { "names: client name when it answers, English otherwise, never an error", function()
+  local old = C_TooltipInfo
+  C_TooltipInfo = { GetHyperlink = function(link)
+    if link == "unit:Creature-0-0-0-0-910001-0000000000" then return { lines = { { leftText = "Rosnador" } } } end
+    if link == "unit:Creature-0-0-0-0-910002-0000000000" then return { lines = {} } end
+    if link == "unit:Creature-0-0-0-0-910003-0000000000" then return { lines = { { leftText = "" } } } end
+    error("boom")
+  end }
+  local a, b, c, d = { id = 910001, name = "Snarler" }, { id = 910002, name = "Pending" },
+    { id = 910003, name = "Empty" }, { id = 910004, name = "Broken" }
+  local got = { ns.LocalName(a), ns.LocalName(b), ns.LocalName(c), ns.LocalName(d) }
+  local known = { ns.KnownLocalName(a), ns.KnownLocalName(b) }
+  C_TooltipInfo = nil
+  local without = ns.LocalName({ id = 910005, name = "NoApi" })
+  C_TooltipInfo = old
+  assert(got[1] == "Rosnador" and got[2] == "Pending" and got[3] == "Empty" and got[4] == "Broken")
+  assert(known[1] == "Rosnador" and known[2] == nil and without == "NoApi")
 end })
 
 table.insert(ns.tests, { "locale: unknown key falls back to the key", function()

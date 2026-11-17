@@ -47,14 +47,17 @@ function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
 
-local function matches(c, f, lo, hi, search, canShow)
+local function matches(c, f, lo, hi, search, canShow, nameOf)
   if f.family and c.family ~= f.family then return false end
   if f.zone and c.zone ~= f.zone then return false end
   if f.showUntameable == false and not c.tame then return false end
   if f.onlyLocated and not canShow(c) then return false end
   -- A level range matches a bucket when the two overlap. Unknown level matches no bucket.
   if lo and not (c.min and c.max and c.min <= hi and c.max >= lo) then return false end
-  if search and not c.name:lower():find(search, 1, true) then return false end
+  if search and not c.name:lower():find(search, 1, true) then
+    local localName = nameOf and nameOf(c)
+    if not (localName and localName:lower():find(search, 1, true)) then return false end
+  end
   return true
 end
 
@@ -63,7 +66,9 @@ end
 -- A header is only emitted when a creature follows it.
 -- `canShow(c)` says whether a creature can be put on the map; it defaults to
 -- the map module's answer and exists so the rule can be checked on its own.
-function Filter.Apply(creatures, f, looks, canShow)
+-- `nameOf(c)` gives the creature's name in the client's language, or nil; the
+-- search then matches either that or the English name.
+function Filter.Apply(creatures, f, looks, canShow, nameOf)
   looks = looks or ns.Looks
   canShow = canShow or ns.Map.CanShow
   local lo, hi
@@ -72,7 +77,7 @@ function Filter.Apply(creatures, f, looks, canShow)
 
   local rows, count, lastGroup = {}, 0, nil
   for _, c in ipairs(creatures) do
-    if matches(c, f, lo, hi, search, canShow) then
+    if matches(c, f, lo, hi, search, canShow, nameOf) then
       local group = c.family .. "/" .. (c.look or "")
       if group ~= lastGroup then
         local look = c.look and looks[c.look]
@@ -166,6 +171,17 @@ test("only-located keeps creatures that can be shown on the map", function()
   assert(ids(Filter.Apply(SAMPLE, { onlyLocated = true }, LOOKS, even)) == "2,4,6")
   assert(ids(Filter.Apply(SAMPLE, { onlyLocated = false }, LOOKS, even)) == "1,2,3,4,5,6")
   assert(ids(Filter.Apply(SAMPLE, { onlyLocated = true, family = "spider" }, LOOKS, even)) == "")
+end)
+
+test("search also matches the name in the client's language", function()
+  local pt = { [2] = "Rosnador", [4] = "Filhote de Lobo Ramovil" }
+  local nameOf = function(c) return pt[c.id] end
+  local function found(text) return ids(Filter.Apply(SAMPLE, { search = text }, LOOKS, nil, nameOf)) end
+  assert(found("rosna") == "2")
+  assert(found("snarl") == "2")           -- English still works
+  assert(found("filhote") == "4")
+  assert(found("lobo") == "4")            -- only the one whose known name has it
+  assert(ids(Filter.Apply(SAMPLE, { search = "rosna" }, LOOKS)) == "")  -- without names: English only
 end)
 
 test("buckets cover the data's level range", function()

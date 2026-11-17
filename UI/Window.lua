@@ -345,7 +345,7 @@ end
 
 function Window:Refresh()
   if not self.frame then return end
-  local rows, count = ns.Filter.Apply(ns.Creatures, ns.db.filters)
+  local rows, count = ns.Filter.Apply(ns.Creatures, ns.db.filters, nil, nil, ns.KnownLocalName)
   ns.List:SetRows(rows)
   if self.count then self.count:SetText(L.COUNT_FMT:format(count, #ns.Creatures)) end
 end

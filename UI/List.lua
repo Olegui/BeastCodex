@@ -66,7 +66,7 @@ local function paint(row, data)
   end
   row.name:SetPoint("LEFT", row.indent, 0)
   row.name:SetWidth(0) -- natural width, so it can be measured
-  row.name:SetText(c.name)
+  row.name:SetText(ns.LocalName(c))
   local cls = ns.ClsLabel(c.cls)
   local tagW = 0
   if cls then
