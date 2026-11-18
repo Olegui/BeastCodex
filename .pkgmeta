@@ -6,4 +6,7 @@ ignore:
   - media
   - tools
   - .superpowers
-  - CHANGELOG.md
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
