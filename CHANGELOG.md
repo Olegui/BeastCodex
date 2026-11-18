@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+- New pet: Ta'shkal, a green and orange cat in Mount Hyjal with 1.0 attack speed, summoned with the Corrupted Cat Figurine. Marked as a rumor until a data source confirms it.
+- Target window: a small window of its own with a button that targets the beast once it is nearby. It stays open with the codex closed, follows the theme, keeps its position and reopens after a reload.
+- News cards above the list (new pets, tips), which can be folded away.
+- 3D model controls: turn left, turn right, play and pause.
+- Search ignores apostrophes and quotes: "tashkal" finds Ta'shkal.
+- Rounded drop-downs, hover that follows each button's shape, red glow on close buttons.
+
 ## 1.1.3
 
 - Zone filter: each zone is listed once. Sub-areas of the same map no longer show as repeated entries, and picking a zone shows every beast in it.

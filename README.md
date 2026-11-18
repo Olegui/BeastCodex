@@ -12,11 +12,13 @@ A hunter's codex for **World of Warcraft: Forever**. Every beast you can tame, a
 
 ### Features
 
-- **704 beasts** across 19 families, grouped by appearance, with level, zone, rare / elite / spawned tags, attack speed, the abilities they teach when tamed, and their family's diet.
+- **705 beasts** across 19 families, grouped by appearance, with level, zone, rare / elite / spawned tags, attack speed, the abilities they teach when tamed, and their family's diet.
 - **Untameable look-alikes** are listed too, greyed out, with the reason when known.
 - **Filters:** family, zone, level range (1-10, 11-20, …), show untameable, only beasts with a map location, and a search box that matches names in your language and in English. One click clears them all.
-- **3D preview:** hover a beast to see its model turn; click to pin it.
+- **3D preview:** hover a beast to see its model turn; click to pin it. Buttons under the model turn it by hand or pause it.
 - **Map pins:** "Show on map" opens the world map on the beast's zone with a pin on every spawn point.
+- **Target window:** a small window of its own whose button targets the beast once it is nearby. It stays open with the codex closed and keeps its place.
+- **News:** cards above the list with new beasts and tips; fold them away with the arrow.
 - **Themes:** Hunter (default), Jungle and Classic (the game's own interface), switched from the selector next to the search box.
 - **11 languages:** follows your game language. Beast, zone and ability names come from the game itself.
 
@@ -38,6 +40,7 @@ A hunter's codex for **World of Warcraft: Forever**. Every beast you can tame, a
 | Preview a beast | Hover its row |
 | Pin a beast | Click its row |
 | Show its spawn points | **Show on map** |
+| Target it when nearby | **Target window**, then **Target** |
 | Remove the pins | **Clear pins** |
 | Change theme | The **Theme** selector next to the search box |
 
@@ -59,11 +62,13 @@ Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que v
 
 ### Funções
 
-- **704 feras** em 19 famílias, agrupadas por aparência, com nível, zona, etiquetas de raro / elite / invocado, velocidade de ataque, habilidades que ensinam ao serem domadas e a dieta da família.
+- **705 feras** em 19 famílias, agrupadas por aparência, com nível, zona, etiquetas de raro / elite / invocado, velocidade de ataque, habilidades que ensinam ao serem domadas e a dieta da família.
 - **Indomáveis parecidas** também aparecem, em cinza, com o motivo quando conhecido.
 - **Filtros:** família, zona, faixa de nível (1-10, 11-20, …), mostrar indomáveis, só com localização no mapa, e uma busca que encontra o nome no seu idioma e em inglês. Um clique limpa todos.
-- **Prévia 3D:** passe o cursor numa fera para ver o modelo girando; clique para fixá-la.
+- **Prévia 3D:** passe o cursor numa fera para ver o modelo girando; clique para fixá-la. Botões sob o modelo giram à mão ou pausam.
 - **Pins no mapa:** "Mostrar no mapa" abre o mapa do mundo na zona da fera, com um pin em cada ponto de aparição.
+- **Janela de alvo:** uma janelinha à parte com um botão que seleciona a fera quando ela está por perto. Fica aberta com o códice fechado e guarda a posição.
+- **Novidades:** cards acima da lista com feras novas e dicas; recolha-os pela seta.
 - **Temas:** Hunter (padrão), Jungle e Classic (a interface padrão do jogo), trocados pelo seletor ao lado da busca.
 - **11 idiomas:** segue o idioma do jogo. Nomes de feras, zonas e habilidades vêm do próprio jogo.
 
@@ -85,6 +90,7 @@ Um códice de caçador para **World of Warcraft: Forever**. Todas as feras que v
 | Ver uma fera | Passe o cursor na linha dela |
 | Fixar uma fera | Clique na linha |
 | Ver os pontos de aparição | **Mostrar no mapa** |
+| Selecionar como alvo quando estiver perto | **Janela de alvo** e depois **Alvo** |
 | Tirar os pins | **Limpar marcadores** |
 | Trocar o tema | O seletor **Tema**, ao lado da busca |
 

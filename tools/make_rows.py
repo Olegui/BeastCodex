@@ -7,6 +7,7 @@ Slots are 64 px apart on a 1024x512 canvas:
   0 row box   1 hovered row   2 selected row (accent outline and glow)
   3 tag pill, the "unavailable" map button face, the "clear pins" button face
   4 drop-down field with arrow, checkbox, tick
+  5 card box (nine slices)
 
 The button, field and checkbox pieces are cut from the theme's own art
 (art-src/<Theme>.png), so they carry the same surface, outline and wear as the
@@ -27,6 +28,7 @@ OFF_PAD, OFF_W = 6, 338                          # the unavailable face is cut 6
 CONTROLS_Y = 4 * SLOT_H                           # second band: field, checkbox, tick
 FIELD_W, FIELD_H, BOX_X, TICK_X, BOX = 362, 56, 368, 432, 48
 CLEAR_X, CLEAR_W, CLEAR_H = 496, 54, 42
+CARD, CARD_Y = 48, 5 * SLOT_H                     # third band: the card box
 SS = 4  # supersampling for smooth edges
 
 # Where the painted controls are in the art, in a 2000-px-wide frame. Both
@@ -191,6 +193,15 @@ def build(name):
     spot.alpha_composite(stroke((CLEAR_W, CLEAR_H), [(cx - r, cy - r), (cx + r, cy + r)], accent + (255,), 2.6))
     spot.alpha_composite(stroke((CLEAR_W, CLEAR_H), [(cx - r, cy + r), (cx + r, cy - r)], accent + (255,), 2.6))
     atlas.alpha_composite(spot, (CLEAR_X, CONTROLS_Y))
+    # Panel box drawn as nine slices (news cards, target window): the row box's look, square.
+    atlas.alpha_composite(rounded((CARD, CARD), 9, fill, border, 2), (0, CARD_Y))
+    atlas.alpha_composite(rounded((CARD, CARD), 9, (255, 255, 255, 22), hover, 2), (CARD + 8, CARD_Y))
+    # Same box, nearly opaque, for a window standing on its own over the game world.
+    atlas.alpha_composite(rounded((CARD, CARD), 9, fill[:3] + (242,), accent + (200,), 2), (2 * (CARD + 8), CARD_Y))
+    # White disc, brightest at the rim: the red hover glow of round close buttons, tinted in the addon.
+    disc = rounded((CARD, CARD), CARD // 2, (255, 255, 255, 110))
+    disc.alpha_composite(rounded((CARD, CARD), CARD // 2, (0, 0, 0, 0), (255, 255, 255, 255), 3).filter(ImageFilter.GaussianBlur(1.5)))
+    atlas.alpha_composite(disc, (3 * (CARD + 8), CARD_Y))
     return atlas
 
 

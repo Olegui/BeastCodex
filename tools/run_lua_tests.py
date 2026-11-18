@@ -45,6 +45,7 @@ C_TooltipInfo = { GetHyperlink = function(link)
 end }
 function tinsert(t, v) table.insert(t, v) end
 function ReloadUI() end
+function InCombatLockdown() return false end
 """
 
 
@@ -60,6 +61,9 @@ SMOKE = """function(ns)
             ns.Window:Refresh()
             ns.Detail:Pin(ns.Creatures[1])
             ns.Detail:Preview(nil)
+            assert(ns.Target:Open(ns.Creatures[1]))   -- the target window, in this theme
+            ns.db.targetOpen = ns.Creatures[1].id
+            ns.Target:Restore()                       -- reopened after a reload
             ns.preloadStarted = nil
             ns.Preload()
             for other in pairs(ns.Themes) do          -- live theme switch rebuilds the window

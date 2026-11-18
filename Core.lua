@@ -23,6 +23,13 @@ function ns.SanitizeDB(db, creatures)
   if type(db.selftest) == "table" then out.selftest = db.selftest end
   if type(db.modelscan) == "table" then out.modelscan = db.modelscan end
   if type(db.names) == "table" then out.names = db.names end
+  if db.modelPaused == true then out.modelPaused = true end
+  if db.newsCollapsed == true then out.newsCollapsed = true end
+  local pos = db.targetPos
+  if type(pos) == "table" and type(pos[1]) == "number" and type(pos[2]) == "number" then
+    out.targetPos = { pos[1], pos[2] }
+  end
+  if type(db.targetOpen) == "number" then out.targetOpen = db.targetOpen end
 
   local f = type(db.filters) == "table" and db.filters or {}
   local families, zones = {}, {}
@@ -118,6 +125,7 @@ frame:SetScript("OnEvent", function(self, _, name)
     })
     icon:Register("BeastCodex", obj, ns.db.minimap)
   end
+  ns.Target:Restore()
 end)
 
 SLASH_BEASTCODEX1 = "/beastcodex"
@@ -205,7 +213,7 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
         assert(p[1] >= 0 and p[2] >= 0 and p[1] + p[3] <= t.rowArt.texW and p[2] + p[4] <= t.rowArt.texH,
           name .. " atlas piece out of bounds: " .. piece)
       end
-      for _, key in ipairs({ "themeButton", "mapButton", "clearButton", "resetButton" }) do
+      for _, key in ipairs({ "themeButton", "mapButton", "clearButton", "resetButton", "targetButton" }) do
         for _, field in ipairs({ "face", "offFace" }) do
           local piece = t[key][field]
           assert(piece == nil or t.rowArt.faces[piece], name .. "." .. key .. " names a missing atlas piece")
@@ -219,6 +227,17 @@ table.insert(ns.tests, { "db: diagnostic results survive a reload", function()
   local db = ns.SanitizeDB({ modelscan = { total = 3 }, selftest = { passed = 1 }, junk = { 1 } }, sample)
   assert(db.modelscan.total == 3 and db.selftest.passed == 1 and db.junk == nil)
   assert(ns.SanitizeDB({ modelscan = "x" }, sample).modelscan == nil)
+end })
+
+table.insert(ns.tests, { "db: model pause and collapsed news survive a reload", function()
+  local db = ns.SanitizeDB({ modelPaused = true, newsCollapsed = true }, sample)
+  assert(db.modelPaused == true and db.newsCollapsed == true)
+  db = ns.SanitizeDB({ modelPaused = "yes" }, sample)
+  assert(db.modelPaused == nil and db.newsCollapsed == nil)
+  assert(ns.SanitizeDB({ targetPos = { 120, 640 } }, sample).targetPos[2] == 640)
+  assert(ns.SanitizeDB({ targetPos = { "a", 640 } }, sample).targetPos == nil)
+  assert(ns.SanitizeDB({ targetOpen = 268231 }, sample).targetOpen == 268231)
+  assert(ns.SanitizeDB({ targetOpen = "x" }, sample).targetOpen == nil)
 end })
 
 table.insert(ns.tests, { "names: client name when it answers, English otherwise, never an error", function()

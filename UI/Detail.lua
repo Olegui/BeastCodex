@@ -118,11 +118,13 @@ function Detail:Show(c)
   if not self.frame then return end
   if self.shown == c then return end
   self.shown = c
+  self.rumor:SetShown(c and c.rumor or false)
   if not c then
     pcall(self.model.ClearModel, self.model)
     self.name:SetText("")
     self.text:SetText(L.HOVER_HINT)
     self.mapButton:SetActive(false, L.SELECT_BEAST) -- nothing to show on the map yet
+    self.targetButton:SetActive(false)
     return
   end
   showModel(self.model, c)
@@ -131,6 +133,7 @@ function Detail:Show(c)
   local can = ns.Map.CanShow(c)
   self.text:SetText(table.concat(lines, "\n"))
   self.mapButton:SetActive(can, L.LOCATION_UNAVAILABLE)
+  self.targetButton:SetActive(true)
 end
 
 function Detail:Preview(c)
@@ -155,12 +158,46 @@ function Detail:Create(parent)
 
   local model = CreateFrame("PlayerModel", nil, parent)
   UI.Place(model, parent, S.model)
-  local angle = 0.5
+  -- Turns on its own unless paused; a held arrow button turns it by hand instead.
+  local angle, turning = 0.5, 0
   model:SetScript("OnUpdate", function(self, elapsed)
-    angle = angle + elapsed * 0.6
+    if turning ~= 0 then
+      angle = angle + turning * elapsed * 2.5
+    elseif not ns.db.modelPaused then
+      angle = angle + elapsed * 0.6
+    end
     self:SetFacing(angle)
   end)
   self.model = model
+
+  -- Controls over the bottom of the model: turn left, play/pause, turn right.
+  local size = math.floor(S.model.h * 0.13 + 0.5)
+  local play = UI.IconButton(model, size, "pause", L.PAUSE)
+  play:SetPoint("BOTTOM", 0, 6)
+  local function paintPlay()
+    local paused = ns.db.modelPaused
+    UI.SetIcon(play.icon, paused and "play" or "pause")
+    play.tooltip = paused and L.PLAY or L.PAUSE
+  end
+  play:SetScript("OnClick", function(b)
+    ns.db.modelPaused = not ns.db.modelPaused
+    paintPlay()
+    if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end
+  end)
+  paintPlay()
+  for dir, spec in pairs({ [-1] = { "rotLeft", L.ROTATE_LEFT, "RIGHT", "LEFT" }, [1] = { "rotRight", L.ROTATE_RIGHT, "LEFT", "RIGHT" } }) do
+    local b = UI.IconButton(model, size, spec[1], spec[2])
+    b:SetPoint(spec[3], play, spec[4], dir * 8, 0)
+    b:SetScript("OnMouseDown", function() turning = dir end)
+    b:SetScript("OnMouseUp", function() turning = 0 end)
+    b:SetScript("OnHide", function() turning = 0 end)
+  end
+
+  -- Top right of the model, only for a creature no data source confirms yet.
+  self.rumor = UI.IconButton(model, size, "alert", L.RUMOR, { 1, 0.78, 0.25 })
+  self.rumor:SetPoint("TOPRIGHT", -6, -6)
+  self.rumor.tooltipText = L.RUMOR_TEXT
+  self.rumor:Hide()
 
   self.name = UI.Text(parent, S.name, "GameFontNormalLarge", c.title, S.name.center and "CENTER" or "LEFT")
   self.name:SetWordWrap(false)
@@ -176,6 +213,12 @@ function Detail:Create(parent)
       self:UpdateClearButton()
     end
   end)
+
+  self.targetButton = UI.Button(parent, S.targetButton, L.TARGET_WINDOW, S.targetButton.label)
+  self.targetButton:SetScript("OnClick", function()
+    if self.shown then ns.Target:Open(self.shown) end
+  end)
+  if S.text.h then self.text:SetHeight(S.text.h) end -- long notes stop above the target button
 
   self.clearButton = UI.Button(parent, S.clearButton, L.CLEAR_PINS, S.clearButton.label)
   self.clearButton:SetScript("OnClick", function()

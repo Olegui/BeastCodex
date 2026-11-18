@@ -1,9 +1,9 @@
 # Relatório dos dados (gerado)
 
-- Criaturas: 704 (domáveis 625, indomáveis 79)
+- Criaturas: 705 (domáveis 626, indomáveis 79)
 - Só no Huntmaster: 6; só no Petopia: 370; nas duas: 328
-- Sem coordenadas: 126
-- Sem mapa: 122
+- Sem coordenadas: 127
+- Sem mapa: 123
 - Sem nível: 7
 
 ## Por família
@@ -13,7 +13,7 @@
 - birdofprey: 17
 - boar: 34
 - carrionbird: 33
-- cat: 91
+- cat: 92
 - crab: 25
 - crocolisk: 31
 - fox: 6
@@ -108,6 +108,7 @@
 - 263315 Ombassa (Riverglades)
 - 11365 Zulian Panther (Zul'Gurub (Raid))
 - 15101 Zulian Prowler (Zul'Gurub (Raid))
+- 268231 Ta'shkal (Mourning's Rest, Mount Hyjal)
 - 11360 Zulian Cub (Zul'Gurub (Raid))
 - 11361 Zulian Tiger (Zul'Gurub (Raid))
 - 4823 Barbed Crustacean (Moonshrine Ruins, Blackfathom Deeps (Dungeon))

@@ -115,10 +115,11 @@ local function paint(row, data)
 end
 
 function List:Update()
-  local maxOffset = math.max(0, #self.rows - #self.frames)
+  local visible = self.visible or #self.frames
+  local maxOffset = math.max(0, #self.rows - visible)
   self.offset = math.min(math.max(0, self.offset), maxOffset)
   for i, row in ipairs(self.frames) do
-    paint(row, self.rows[i + self.offset])
+    paint(row, i <= visible and self.rows[i + self.offset] or nil)
   end
   self.empty:SetShown(#self.rows == 0)
   self.bar:SetMinMaxValues(0, maxOffset)
@@ -238,9 +239,7 @@ function List:Create(parent, r)
   local rowH, gap = S.rowH, S.rowGap or 0
   local width, height = r.w, r.h
   self.frames, self.rows, self.offset = {}, {}, 0
-  local holder = CreateFrame("Frame", nil, parent)
-  holder:SetPoint("TOPLEFT", parent, "TOPLEFT", r.x, -r.y)
-  holder:SetSize(width, height)
+  local holder = CreateFrame("Frame", nil, parent) -- placed by SetTop
   holder:EnableMouseWheel(true)
   holder:SetScript("OnMouseWheel", function(_, delta)
     self.offset = self.offset - delta * 3
@@ -299,6 +298,19 @@ function List:Create(parent, r)
   end)
   self.bar = bar
   self.holder = holder
+  self.area, self.parent = r, parent
+  self:SetTop(0)
+end
+
+-- Starts the list `top` units below its theme rectangle (the news cards sit
+-- above it); rows that no longer fit are left out.
+function List:SetTop(top)
+  local r = self.area
+  self.holder:ClearAllPoints()
+  self.holder:SetPoint("TOPLEFT", self.parent, "TOPLEFT", r.x, -(r.y + top))
+  self.holder:SetSize(r.w, r.h - top)
+  self.visible = math.min(#self.frames, math.floor((r.h - top) / ns.Skin.rowH))
+  self:Update()
 end
 
 -- Tag look per classification: plain rares grey, spawned creatures purple,

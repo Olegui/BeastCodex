@@ -52,6 +52,14 @@ function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
 
+-- Lowercase, without apostrophes and quotes: "tashkal", "ta'shkal" and
+-- "ta’shkal" (curly or acute, as some keyboards type it) all find Ta'shkal.
+function Filter.Plain(s)
+  -- Stripped before lower(): a Latin-1 C locale would lowercase the UTF-8 bytes themselves.
+  s = s:gsub("\226\128[\152\153\156\157]", ""):gsub("\194\180", "") -- ‘ ’ “ ” ´
+  return (s:gsub("['`\"]", ""):lower())
+end
+
 local function matches(c, f, lo, hi, search, canShow, nameOf, zoneLabel)
   if f.family and c.family ~= f.family then return false end
   if zoneLabel and ns.ZoneLabel(c) ~= zoneLabel then return false end
@@ -59,9 +67,9 @@ local function matches(c, f, lo, hi, search, canShow, nameOf, zoneLabel)
   if f.onlyLocated and not canShow(c) then return false end
   -- A level range matches a bucket when the two overlap. Unknown level matches no bucket.
   if lo and not (c.min and c.max and c.min <= hi and c.max >= lo) then return false end
-  if search and not c.name:lower():find(search, 1, true) then
+  if search and not Filter.Plain(c.name):find(search, 1, true) then
     local localName = nameOf and nameOf(c)
-    if not (localName and localName:lower():find(search, 1, true)) then return false end
+    if not (localName and Filter.Plain(localName):find(search, 1, true)) then return false end
   end
   return true
 end
@@ -78,7 +86,7 @@ function Filter.Apply(creatures, f, looks, canShow, nameOf)
   canShow = canShow or ns.Map.CanShow
   local lo, hi
   if f.bucket then lo, hi = (f.bucket - 1) * 10 + 1, f.bucket * 10 end
-  local search = f.search and f.search ~= "" and f.search:lower() or nil
+  local search = f.search and f.search ~= "" and Filter.Plain(f.search) or nil
 
   -- Sub-areas of one map (Deathknell, Venomweb Vale...) are shown under the
   -- map's name, so the zone filter compares that name, not the sub-area.
@@ -181,6 +189,14 @@ test("search is case-insensitive, substring, and treats pattern characters liter
   assert(ids(apply({ search = "(" })) == "5")
   assert(ids(apply({ search = "%" })) == "")
   assert(ids(apply({ search = "VILE" })) == "3,4")
+end)
+
+test("search ignores apostrophes and quotes on either side", function()
+  local cat = { { id = 7, name = "Ta'shkal", family = "cat", tame = true } }
+  for _, text in ipairs({ "ta'shkal", "tashkal", "Ta\226\128\153shkal", "ta\194\180shkal", "'shkal" }) do
+    assert(ids(Filter.Apply(cat, { search = text }, LOOKS)) == "7", text)
+  end
+  assert(Filter.Plain("O\226\128\152Neil\226\128\156s\"") == "oneils")
 end)
 
 test("classification labels: known ones translate, unknown ones give no label", function()

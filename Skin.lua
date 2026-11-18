@@ -39,7 +39,8 @@ ns.Themes.classic = {
   rowH = 20,
   model = { x = 662, y = 68, w = 222, h = 196 },
   name = { x = 664, y = 274, w = 218 },
-  text = { x = 664, y = 300, w = 218 },
+  text = { x = 664, y = 300, w = 218, h = 150 }, -- ends above the target button
+  targetButton = { x = 664, y = 458, w = 218, h = 22, label = true },
   mapButton = { x = 664, y = 486, w = 218, h = 22, label = true },
   clearButton = { x = 664, y = 514, w = 218, h = 22, label = true },
   colors = {
@@ -108,21 +109,28 @@ local function panels(look)
         pillGrey = { 920, 192, 96, 30 },  -- tag for plain rares
         pillSpawn = { 560, 256, 96, 30 }, -- tag for spawned creatures
         red = { 672, 256, 338, 60 },     -- the main button in red, rim included (like `off`)
+        card = { 0, 320, 48, 48 },       -- rounded box, drawn as nine slices (UI.Slice)
+        cardHover = { 56, 320, 48, 48 }, -- its hovered look
+        panel = { 112, 320, 48, 48 },    -- nearly opaque box for the target window
+        disc = { 168, 320, 48, 48 },     -- white disc: the red glow of round close buttons
       },
     },
     label = look.label,
     credits = { x = 500, y = 1143, w = 1000 }, -- on the frame below the panels, clear of the corner decorations
     -- Same height and look as the search field it sits beside.
-    themeButton = { x = 1030, y = 108, w = 368, h = 57, face = "field", padRight = 24 },
+    themeButton = { x = 1030, y = 108, w = 368, h = 57, face = "field", pill = true, capR = 46, padRight = 24 },
     scroll = { width = 5, track = { 0, 0, 0, 0.25 }, thumb = { a[1], a[2], a[3], 0.75 } },
     search = { x = 1436, y = 119, w = 300, h = 38, padRight = 8 },
     -- Over the magnifier painted in the field: a piece of the field with an X instead.
     searchClear = { x = 1740, y = 116, w = 54, h = 42, face = "clearSearch" },
-    close = { x = 1832, y = 111, w = 50, h = 50 },
+    close = { x = 1832, y = 111, w = 50, h = 50, glow = "red" },
+    -- The painted fields have small corners; the field piece laid over them, a
+    -- little larger (facePad) so it covers them, makes them pills like the
+    -- search field. capR: atlas px of its right end, the arrow included.
     filters = {
-      { x = 164, y = 266, w = 310, h = 53, padRight = 22, label = { x = 164, y = 234 } },
-      { x = 164, y = 376, w = 310, h = 53, padRight = 22, label = { x = 164, y = 344 } },
-      { x = 164, y = 487, w = 310, h = 53, padRight = 22, label = { x = 164, y = 455 } },
+      { x = 164, y = 266, w = 310, h = 53, padRight = 22, label = { x = 164, y = 234 }, face = "field", pill = true, capR = 46, facePad = 4 },
+      { x = 164, y = 376, w = 310, h = 53, padRight = 22, label = { x = 164, y = 344 }, face = "field", pill = true, capR = 46, facePad = 4 },
+      { x = 164, y = 487, w = 310, h = 53, padRight = 22, label = { x = 164, y = 455 }, face = "field", pill = true, capR = 46, facePad = 4 },
     },
     check = { x = 166, y = 578, w = 34, h = 34, labelW = 262 },
     check2 = { x = 166, y = 628, w = 34, h = 34, labelW = 262 },
@@ -133,7 +141,10 @@ local function panels(look)
     list = { x = 552, y = 226, w = 820, h = 892 },
     model = { x = 1458, y = 250, w = 380, h = 354 },
     name = { x = 1452, y = 640, w = 404 },
-    text = { x = 1452, y = 704, w = 404 },
+    text = { x = 1452, y = 704, w = 404, h = 168 }, -- ends above the target button
+    -- Not in the art: opens the target window. Same look as "clear pins".
+    targetButton = { x = 1447, y = 884, w = 404, h = 56, label = true, font = "GameFontNormal",
+      textColor = a, face = "outline" },
     mapButton = { x = 1447, y = 960, w = 404, h = 62, label = true, font = "GameFontNormal",
       textColor = look.onAccent, dimColor = { 0.82, 0.80, 0.76 }, offFace = "off" },
     -- Not in the art: the addon draws it, and only while there are pins to clear.
@@ -167,6 +178,20 @@ ns.Themes.hunter = panels({
   tagHex = "d9ad5c", tagText = { 1, 0.93, 0.80 },
   menu = { 0.13, 0.08, 0.05, 0.98 },
 })
+
+-- The target window's own art (art-src/HunterTarget.png, cut small by
+-- tools/splice_target.py, then tools/make_skin.py --width 512). Rectangles as
+-- { x, y, w, h } in the source's 2000-px-wide units after the cuts (`srcW` wide);
+-- UI/Target.lua scales them to `W` units.
+ns.Themes.hunter.targetArt = {
+  texture = ART .. "HunterTarget", texW = 512, texH = 512, imgW = 512, imgH = 333,
+  srcW = 1290, W = 194, -- same scale as before the cuts: 0.15 units per source unit
+  close = { 1025, 125, 130, 130 },  -- the painted round X
+  title = { 260, 262, 770 },        -- the leather's width, centered on the window
+  info = { 260, 350, 770 },
+  button = { 350, 435, 590, 135 },  -- the painted gold button
+  textColor = { 0.16, 0.10, 0.03 }, -- dark label on the gold face
+}
 
 ns.DEFAULT_THEME = "hunter"
 

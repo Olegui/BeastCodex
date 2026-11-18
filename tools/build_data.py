@@ -90,8 +90,30 @@ def merge(hm, pet_creatures, wh, areas=None):
         # No map: the area ID still lets the game name the zone in the player's language.
         c["area"] = zone_area(c["zone"], areas) if areas and c["map"] is None and c["zone"] else None
         out.append(c)
-    out.sort(key=lambda c: (c["family"] or "", c["look"] is None, c["look"] or "", c["name"]))
+    out.sort(key=sort_key)
     return out
+
+
+def sort_key(c):
+    return (c["family"] or "", c["look"] is None, c["look"] or "", c["name"])
+
+
+# Creatures no source lists yet, written by hand.
+# shortcut: Ta'shkal (wowhead.com/forever/npc=268231, Level 58 Beast (Normal), Cat) is in no source the
+# builder reads; drop it from here once Petopia lists it, or the creature shows up twice.
+MANUAL = [
+    {"id": 268231, "name": "Ta'shkal", "family": "cat", "look": "tigerskingreen", "min": 58, "max": 58,
+     "cls": "spawned", "zone": "Mourning's Rest, Mount Hyjal", "map": None, "area": 616, "tame": True, "rumor": True,
+     "note": "Loot the Corrupted Cat Figurine from a green slime pool in Felblood Scar, then use the "
+             "lantern on the hillside above the Mourning's Rest cave (27.0, 63.6) with it in your bags "
+             "to spawn this green and orange striped cat. Same 1.0 attack speed as Broken Tooth.",
+     "speed": 1.0, "abilities": [], "coords": []},
+]
+
+
+def add_manual(creatures, manual=MANUAL):
+    """Hand-written entries join the generated ones, sorted the same way."""
+    return sorted(creatures + [dict(c) for c in manual], key=sort_key)
 
 
 def validate(creatures):
@@ -122,7 +144,7 @@ def _lua(v):
 
 
 FIELDS = ("id", "name", "family", "look", "min", "max", "cls", "zone", "map", "area",
-          "tame", "note", "speed", "abilities", "coords")
+          "tame", "rumor", "note", "speed", "abilities", "coords")
 
 
 def emit_lua(creatures, looks, diets, path, spells=None):
@@ -142,7 +164,7 @@ def emit_lua(creatures, looks, diets, path, spells=None):
         lines.append("  [%s] = %d," % (_lua(k), spells[k]))
     lines += ["}", "", "ns.MaxLevel = %d" % max([c["max"] or 0 for c in creatures] or [0]), "", "ns.Creatures = {"]
     for c in creatures:
-        lines.append("  { " + ", ".join("%s = %s" % (f, _lua(c[f])) for f in FIELDS if c[f] is not None) + " },")
+        lines.append("  { " + ", ".join("%s = %s" % (f, _lua(c[f])) for f in FIELDS if c.get(f) is not None) + " },")
     lines += ["}", ""]
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -193,7 +215,7 @@ def main():
         if d:
             wh[i] = d
     areas = area_ids(petopia.Fetcher(os.path.join(ROOT, ".cache", "wago")).get(AREA_TABLE_URL))
-    creatures = merge(hm, pet_rows, wh, areas)
+    creatures = add_manual(merge(hm, pet_rows, wh, areas))
     unnamed = sorted({c["zone"] for c in creatures if c["zone"] and c["map"] is None and not c["area"]})
     if unnamed:
         print("zones without a map or an area (shown in English):", "; ".join(unnamed))

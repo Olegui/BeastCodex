@@ -49,6 +49,112 @@ function UI.Atlas(parent, layer, name)
   return t
 end
 
+-- Fills `frame` with an atlas piece cut in nine: corners keep their size
+-- (`corner` atlas px, shown at half size like the rows), edges and middle
+-- stretch, so rounded corners stay round at any size. False without the piece.
+function UI.Slice(frame, layer, name, corner)
+  local art = ns.Skin.rowArt
+  local p = art and art.faces and art.faces[name]
+  if not p then return false end
+  corner = corner or 12
+  local xs = { p[1], p[1] + corner, p[1] + p[3] - corner, p[1] + p[3] }
+  local ys = { p[2], p[2] + corner, p[2] + p[4] - corner, p[2] + p[4] }
+  local s = corner / 2
+  -- Per column: where its left and right edges sit ({frame side, offset}); rows likewise.
+  local cols = { { { "LEFT", 0 }, { "LEFT", s } }, { { "LEFT", s }, { "RIGHT", -s } }, { { "RIGHT", -s }, { "RIGHT", 0 } } }
+  local rows = { { { "TOP", 0 }, { "TOP", -s } }, { { "TOP", -s }, { "BOTTOM", s } }, { { "BOTTOM", s }, { "BOTTOM", 0 } } }
+  for r, row in ipairs(rows) do
+    for c, col in ipairs(cols) do
+      local t = frame:CreateTexture(nil, layer)
+      t:SetTexture(art.texture)
+      t:SetTexCoord(xs[c] / art.texW, xs[c + 1] / art.texW, ys[r] / art.texH, ys[r + 1] / art.texH)
+      t:SetPoint("TOPLEFT", frame, row[1][1] .. col[1][1], col[1][2], row[1][2])
+      t:SetPoint("BOTTOMRIGHT", frame, row[2][1] .. col[2][1], col[2][2], row[2][2])
+    end
+  end
+  return true
+end
+
+-- A panel box behind `frame`: the theme's rounded card, else a flat dark fill
+-- with a thin line around it.
+-- `opaque` for a window over the game world rather than a card inside the codex.
+function UI.Box(frame, opaque)
+  if UI.Slice(frame, "BACKGROUND", opaque and "panel" or "card") then return end
+  local c = ns.Skin.colors
+  local bg = frame:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  local fill = opaque and (c.menu or { 0.07, 0.06, 0.05, 0.96 }) or { 0, 0, 0, 0.3 }
+  bg:SetColorTexture(fill[1], fill[2], fill[3], fill[4])
+  local line = c.menuBorder or { c.header[1], c.header[2], c.header[3], 0.5 }
+  for _, edge in ipairs({ { "TOPLEFT", "TOPRIGHT", nil, 1 }, { "BOTTOMLEFT", "BOTTOMRIGHT", nil, 1 },
+                          { "TOPLEFT", "BOTTOMLEFT", 1, nil }, { "TOPRIGHT", "BOTTOMRIGHT", 1, nil } }) do
+    local t = frame:CreateTexture(nil, "BORDER")
+    t:SetColorTexture(line[1], line[2], line[3], line[4] or 0.5)
+    t:SetPoint(edge[1])
+    t:SetPoint(edge[2])
+    if edge[3] then t:SetWidth(edge[3]) else t:SetHeight(edge[4]) end
+  end
+end
+
+-- Sets `text` in the first font of `fonts` (global font object names, largest
+-- first) in which it fits the string's width; in the last one otherwise, where
+-- the client cuts it short with "...". Returns whether it was cut. `width`
+-- defaults to the string's own (set it for one sized by its anchors).
+function UI.Fit(fs, text, fonts, width)
+  width = width or fs:GetWidth()
+  for i, name in ipairs(fonts) do
+    if _G[name] then fs:SetFontObject(_G[name]) end
+    fs:SetText(text)
+    if fs:GetStringWidth() <= width then return false end
+    if i == #fonts then return true end
+  end
+  return false
+end
+
+-- White glyphs from Art/Icons.tga (tools/make_icons.py), tinted per use.
+local ICON_FILE = "Interface\\AddOns\\BeastCodex\\Art\\Icons"
+local ICON_CELL = { rotLeft = 0, rotRight = 1, play = 2, pause = 3, alert = 4, chevUp = 5, chevDown = 6, close = 7 }
+
+function UI.SetIcon(t, name)
+  local i = ICON_CELL[name]
+  t:SetTexture(ICON_FILE)
+  t:SetTexCoord(i / 8, (i + 1) / 8, 0, 1)
+end
+
+-- A small round button showing one icon in the theme's accent, named by a
+-- tooltip on hover. Themes with an atlas give it the round checkbox face.
+function UI.IconButton(parent, size, icon, tooltip, color)
+  local c = ns.Skin.colors
+  local b = CreateFrame("Button", nil, parent)
+  b:SetSize(size, size)
+  local face = UI.Atlas(b, "BACKGROUND", "box")
+  if face then
+    face:SetAllPoints()
+  else
+    local bg = b:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetColorTexture(0, 0, 0, 0.45)
+  end
+  b.icon = b:CreateTexture(nil, "ARTWORK")
+  b.icon:SetPoint("CENTER")
+  b.icon:SetSize(size * 0.62, size * 0.62)
+  local tint = color or c.header
+  b.icon:SetVertexColor(tint[1], tint[2], tint[3])
+  UI.SetIcon(b.icon, icon)
+  local hl = b:CreateTexture(nil, "HIGHLIGHT")
+  hl:SetAllPoints()
+  hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
+  b.tooltip = tooltip
+  b:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText(self.tooltip)
+    if self.tooltipText then GameTooltip:AddLine(self.tooltipText, 1, 1, 1, true) end
+    GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  return b
+end
+
 -- A frame built from one of the client's templates when the theme copies the
 -- default interface (`blizzard`). Returns the frame and whether the template
 -- was used; a client without that template gets a plain frame instead.
@@ -78,11 +184,74 @@ function UI.NativeDropdown(parent, r, items, isSelected, onPick)
   return dd
 end
 
+-- A red glow on hover, for close buttons (as in EAD Skill Preview). The
+-- client's round highlight is blue; without its color it takes the red.
+function UI.RedGlow(b)
+  -- Themes with an atlas: a disc filling the whole round button.
+  local disc = UI.Atlas(b, "HIGHLIGHT", "disc")
+  if disc then
+    disc:SetAllPoints()
+    disc:SetBlendMode("ADD")
+    disc:SetVertexColor(1, 0.15, 0.08, 0.85)
+    return
+  end
+  b:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+  local t = b:GetHighlightTexture()
+  if t then
+    t:SetDesaturated(true)
+    t:SetVertexColor(1, 0.12, 0.08)
+  end
+end
+
+-- An atlas piece over `b`, `pad` units past its edges, as one object with
+-- Show/Hide/SetShown/SetBlend/SetColor. With `r.pill` it is three textures:
+-- ends kept in proportion (`r.capR` atlas px for the right one, half the
+-- piece's height otherwise), middle stretched. Nil without the piece.
+function UI.Face(b, layer, name, pad, r)
+  local art = ns.Skin.rowArt
+  local p = art and art.faces and name and art.faces[name]
+  if not p then return nil end
+  local parts = {}
+  local function tex(x0, x1)
+    local t = b:CreateTexture(nil, layer)
+    t:SetTexture(art.texture)
+    t:SetTexCoord(x0 / art.texW, x1 / art.texW, p[2] / art.texH, (p[2] + p[4]) / art.texH)
+    parts[#parts + 1] = t
+    return t
+  end
+  if r.pill then
+    local k = (r.h + 2 * pad) / p[4] -- window units per atlas px
+    local capL, capR = p[4] / 2, r.capR or p[4] / 2
+    local left, right = tex(p[1], p[1] + capL), tex(p[1] + p[3] - capR, p[1] + p[3])
+    local mid = tex(p[1] + capL, p[1] + p[3] - capR)
+    left:SetPoint("TOPLEFT", -pad, pad)
+    left:SetPoint("BOTTOMLEFT", -pad, -pad)
+    left:SetWidth(capL * k)
+    right:SetPoint("TOPRIGHT", pad, pad)
+    right:SetPoint("BOTTOMRIGHT", pad, -pad)
+    right:SetWidth(capR * k)
+    mid:SetPoint("TOPLEFT", left, "TOPRIGHT")
+    mid:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT")
+  else
+    local t = tex(p[1], p[1] + p[3])
+    t:SetPoint("TOPLEFT", -pad, pad)
+    t:SetPoint("BOTTOMRIGHT", pad, -pad)
+  end
+  local face = {}
+  function face:SetShown(on) for _, t in ipairs(parts) do t:SetShown(on) end end
+  function face:Show() self:SetShown(true) end
+  function face:Hide() self:SetShown(false) end
+  function face:SetBlend(mode) for _, t in ipairs(parts) do t:SetBlendMode(mode) end end
+  function face:SetColor(cr, cg, cb, ca) for _, t in ipairs(parts) do t:SetVertexColor(cr, cg, cb, ca) end end
+  return face
+end
+
 -- A clickable area. With `showLabel` it carries centered text; without it the
 -- art underneath is the button face and `tooltip` names it on hover.
-function UI.Button(parent, r, text, showLabel)
-  if showLabel and not r.face then
-    local b, native = UI.Make("Button", parent, "UIPanelButtonTemplate")
+-- `template` adds one of the client's templates (a secure action button, say).
+function UI.Button(parent, r, text, showLabel, template)
+  if showLabel and not r.face and ns.Skin.blizzard then
+    local b, native = UI.Make("Button", parent, (template and template .. ", " or "") .. "UIPanelButtonTemplate")
     if native then
       -- The client's red button: its own textures, highlight and disabled look.
       UI.Place(b, parent, r)
@@ -97,7 +266,7 @@ function UI.Button(parent, r, text, showLabel)
     b:Hide()
   end
   local c = ns.Skin.colors
-  local b = CreateFrame("Button", nil, parent)
+  local b = CreateFrame("Button", nil, parent, template)
   UI.Place(b, parent, r)
   local fill = showLabel and not r.face and c.control
   if fill then
@@ -106,23 +275,28 @@ function UI.Button(parent, r, text, showLabel)
     bg:SetColorTexture(fill[1], fill[2], fill[3], fill[4])
   end
   -- `face` names the atlas piece that is the button's own look; `offFace` the
-  -- piece laid over it while it is unavailable.
-  local face = UI.Atlas(b, "BACKGROUND", r.face)
-  if face then
-    local pad = r.facePad or 0 -- window units; faces cut with their rim reach past the button
-    face:SetPoint("TOPLEFT", -pad, pad)
-    face:SetPoint("BOTTOMRIGHT", pad, -pad)
+  -- piece laid over it while it is unavailable. `facePad`: window units the
+  -- face reaches past the button (faces cut with their rim, or covering a
+  -- painted control underneath); `pill` draws it in three parts so its round
+  -- ends stay round at any width.
+  local facePad = r.facePad or 0
+  local face = UI.Face(b, "BACKGROUND", r.face, facePad, r)
+  b.off = UI.Face(b, "BORDER", r.offFace, ns.Skin.rowArt and ns.Skin.rowArt.offPad or 0, r) or false
+  if b.off then b.off:Hide() end
+  -- Hover lights the button's own shape (its face, or the shape of the painted
+  -- button under it), in the accent; nothing square spills past round corners.
+  local shape = r.face or r.offFace
+  local glow = shape and UI.Face(b, "HIGHLIGHT", shape, r.face and facePad or ns.Skin.rowArt.offPad or 0, r)
+  if glow then
+    glow:SetBlend("ADD")
+    glow:SetColor(c.header[1], c.header[2], c.header[3], 0.45)
+  elseif r.glow == "red" then
+    UI.RedGlow(b)
+  else
+    local hl = b:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   end
-  b.off = UI.Atlas(b, "BORDER", r.offFace) or false
-  if b.off then
-    local pad = ns.Skin.rowArt.offPad or 0
-    b.off:SetPoint("TOPLEFT", -pad, pad)
-    b.off:SetPoint("BOTTOMRIGHT", pad, -pad)
-    b.off:Hide()
-  end
-  local hl = b:CreateTexture(nil, "HIGHLIGHT")
-  hl:SetAllPoints()
-  hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   if showLabel then
     b.label = b:CreateFontString(nil, "ARTWORK", r.font or "GameFontHighlightSmall")
     -- labelY nudges the text up (window units) on art whose visible face is
@@ -631,6 +805,7 @@ function Window:Create()
 
   ns.List:Create(p, S.list)
   ns.Detail:Create(p)
+  ns.News:Create(p, S.list)
 
   self.frame = f
 end
@@ -640,6 +815,7 @@ end
 function Window:SetTheme(name)
   if not ns.Themes[name] then return false end
   ns.db.theme = ns.ApplyTheme(name)
+  ns.Target:Refresh()
   local old = self.frame
   if not old then return true end
   local shown = old:IsShown()
