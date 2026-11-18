@@ -10,7 +10,8 @@ List.onEnter, List.onLeave, List.onClick = nil, nil, nil
 
 local zoneCache = {}
 
--- The game's own (localized) map name when the map is known, else the English zone.
+-- The game's own (localized) name: of the map when it is known, else of the
+-- area (dungeons, raids and zones without a world map). English as a last resort.
 function ns.ZoneLabel(c)
   if c.map then
     local name = zoneCache[c.map]
@@ -18,6 +19,16 @@ function ns.ZoneLabel(c)
       local info = C_Map and C_Map.GetMapInfo and C_Map.GetMapInfo(c.map)
       name = info and info.name or false
       zoneCache[c.map] = name
+    end
+    if name then return name end
+  end
+  if c.area then
+    local key = -c.area -- same cache as maps; negative keeps the two ID spaces apart
+    local name = zoneCache[key]
+    if name == nil then
+      name = C_Map and C_Map.GetAreaInfo and C_Map.GetAreaInfo(c.area) or false
+      if name == "" then name = false end
+      zoneCache[key] = name
     end
     if name then return name end
   end
@@ -311,4 +322,13 @@ table.insert(ns.tests, { "list: the tag is never cut, the name gives way", funct
   assert(List.NameWidth(200, 120, 40, 6) == 120)  -- both fit
   assert(List.NameWidth(200, 180, 40, 6) == 154)  -- name shortened to leave room for the tag
   assert(List.NameWidth(30, 180, 40, 6) == 0)     -- absurdly narrow row: no negative width
+end })
+
+table.insert(ns.tests, { "list: a zone without a map takes the game's area name", function()
+  local old = C_Map
+  C_Map = { GetAreaInfo = function(id) return id == 990209 and "Bastilha" or nil end }
+  local named = ns.ZoneLabel({ zone = "Shadowfang Keep (Dungeon)", area = 990209 })
+  local unknown = ns.ZoneLabel({ zone = "Nowhere (Dungeon)", area = 990210 })
+  C_Map = old
+  assert(named == "Bastilha" and unknown == "Nowhere (Dungeon)", named .. " / " .. unknown)
 end })

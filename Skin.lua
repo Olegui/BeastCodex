@@ -148,9 +148,9 @@ local function panels(look)
   })
 end
 
--- "Selva": modern dark-green panels with amber accents and tropical leaves.
+-- "Jungle" (internal name "selva", kept so saved settings still match): modern dark-green panels with amber accents and tropical leaves.
 ns.Themes.selva = panels({
-  art = "Selva", label = "Selva", accent = { 0.96, 0.66, 0.25 },
+  art = "Selva", label = "Jungle", accent = { 0.96, 0.66, 0.25 },
   onAccent = { 0.13, 0.09, 0.02 },
   text = { 0.92, 0.90, 0.82 }, dim = { 0.45, 0.52, 0.48 },
   tagHex = "e8a33d", tagText = { 1, 0.90, 0.78 },

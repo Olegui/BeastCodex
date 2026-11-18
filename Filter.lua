@@ -52,9 +52,9 @@ function Filter.FamilyName(family)
   return L["FAMILY_" .. family]
 end
 
-local function matches(c, f, lo, hi, search, canShow, nameOf)
+local function matches(c, f, lo, hi, search, canShow, nameOf, zoneLabel)
   if f.family and c.family ~= f.family then return false end
-  if f.zone and c.zone ~= f.zone then return false end
+  if zoneLabel and ns.ZoneLabel(c) ~= zoneLabel then return false end
   if f.showUntameable == false and not c.tame then return false end
   if f.onlyLocated and not canShow(c) then return false end
   -- A level range matches a bucket when the two overlap. Unknown level matches no bucket.
@@ -80,9 +80,16 @@ function Filter.Apply(creatures, f, looks, canShow, nameOf)
   if f.bucket then lo, hi = (f.bucket - 1) * 10 + 1, f.bucket * 10 end
   local search = f.search and f.search ~= "" and f.search:lower() or nil
 
+  -- Sub-areas of one map (Deathknell, Venomweb Vale...) are shown under the
+  -- map's name, so the zone filter compares that name, not the sub-area.
+  local zoneLabel = f.zone
+  for _, c in ipairs(creatures) do
+    if f.zone and c.zone == f.zone then zoneLabel = ns.ZoneLabel(c) break end
+  end
+
   local rows, count, lastGroup = {}, 0, nil
   for _, c in ipairs(creatures) do
-    if matches(c, f, lo, hi, search, canShow, nameOf) then
+    if matches(c, f, lo, hi, search, canShow, nameOf, zoneLabel) then
       local group = c.family .. "/" .. (c.look or "")
       if group ~= lastGroup then
         local look = c.look and looks[c.look]
@@ -151,6 +158,17 @@ test("a header with no visible creature is not emitted", function()
   assert(headers(rows) == L.FAMILY_spider and ids(rows) == "1")
   rows = apply({ zone = "Darnassus", showUntameable = false })
   assert(#rows == 0)
+end)
+
+test("sub-areas of one map count as the same zone", function()
+  local list = {
+    { id = 1, name = "A", family = "bat", tame = true, zone = "Deathknell", map = 1420 },
+    { id = 2, name = "B", family = "bat", tame = true, zone = "Tirisfal Glades", map = 1420 },
+    { id = 3, name = "C", family = "bat", tame = true, zone = "Feralas", map = 1444 },
+  }
+  local always = function() return true end
+  assert(ids(Filter.Apply(list, { zone = "Deathknell" }, {}, always)) == "1,2")
+  assert(ids(Filter.Apply(list, { zone = "Feralas" }, {}, always)) == "3")
 end)
 
 test("family and zone combine", function()

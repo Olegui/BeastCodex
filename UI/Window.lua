@@ -398,12 +398,16 @@ end
 local zoneOptionsCache
 local function zoneOptions()
   if zoneOptionsCache then return zoneOptionsCache end
-  local label = {}
+  -- One entry per name shown: sub-areas of the same map share the map's name,
+  -- and the filter (Filter.Apply) matches all of them.
+  local out, seen = {}, {}
   for _, c in ipairs(ns.Creatures) do
-    if c.zone and not label[c.zone] then label[c.zone] = ns.ZoneLabel(c) end
+    local text = c.zone and ns.ZoneLabel(c)
+    if text and not seen[text] then
+      seen[text] = true
+      out[#out + 1] = { c.zone, text }
+    end
   end
-  local out = {}
-  for zone, text in pairs(label) do out[#out + 1] = { zone, text } end
   table.sort(out, function(a, b) return a[2] < b[2] end)
   zoneOptionsCache = out
   return out

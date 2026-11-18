@@ -50,7 +50,17 @@ class MergeTest(unittest.TestCase):
 
     def test_no_location(self):
         c = build_data.merge({}, [PET_NEW], {})[0]
+        self.assertIsNone(c["area"])
         self.assertEqual((c["map"], c["coords"]), (None, []))
+
+    def test_zone_without_map_gets_the_area_of_its_outermost_part(self):
+        areas = build_data.area_ids(
+            "ID,AreaName_lang,ParentAreaID\n236,Shadowfang Keep,130\n209,Shadowfang Keep,0\n1583,Blackrock Spire,0\n")
+        self.assertEqual(areas["shadowfang keep"], 209)  # top-level area wins
+        self.assertEqual(build_data.zone_area("Halycon's Lair, Blackrock Spire (Dungeon)", areas), 1583)
+        self.assertIsNone(build_data.zone_area("Nowhere", areas))
+        pet = dict(PET_NEW, zone="Shadowfang Keep (Dungeon)")
+        self.assertEqual(build_data.merge({}, [pet], {}, areas)[0]["area"], 209)
 
     def test_same_npc_in_two_looks_is_kept_once(self):
         out = build_data.merge({}, [PET_SNARLER, dict(PET_SNARLER, look="other")], {})

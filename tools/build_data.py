@@ -3,7 +3,7 @@
 Run from the repository root:  py -m tools.build_data
 Network access is cached under .cache/; delete that folder to refetch.
 """
-import collections, os, sys
+import collections, csv, io, os, re, sys
 
 from tools import huntmaster, petopia, wowhead
 
@@ -30,7 +30,26 @@ def ability_spells(path):
 CLASSIFICATIONS = {None, "rare", "elite", "rareelite", "spawned", "spawnedelite"}
 
 
-def merge(hm, pet_creatures, wh):
+# The client's area names (zones, dungeons, sub-areas) for the Forever build, from wago.tools.
+AREA_TABLE_URL = "https://wago.tools/db2/AreaTable/csv?build=1.60.1.70959"
+
+
+def area_ids(csv_text):
+    """{lowercased English area name: area ID}; a top-level area wins over a sub-area of the same name."""
+    out = {}
+    rows = sorted(csv.DictReader(io.StringIO(csv_text)), key=lambda r: (r["ParentAreaID"] != "0", int(r["ID"])))
+    for r in rows:
+        out.setdefault(r["AreaName_lang"].lower(), int(r["ID"]))
+    return out
+
+
+def zone_area(zone, areas):
+    """Area ID of a Petopia zone such as "Halycon's Lair, Blackrock Spire (Dungeon)": its last, outermost part."""
+    top = re.sub(r"\s*\((Dungeon|Raid|Battleground)\)$", "", zone).split(", ")[-1]
+    return areas.get(top.lower())
+
+
+def merge(hm, pet_creatures, wh, areas=None):
     """hm: {id: huntmaster record}; pet_creatures: Petopia rows; wh: {id: {'area', 'coords'}}."""
     pet = {}
     for row in pet_creatures:
@@ -68,6 +87,8 @@ def merge(hm, pet_creatures, wh):
             c["map"], coords = (h and h["map"]) or zone_map.get(c["zone"]), []
         c["coords"] = [v for xy in coords for v in xy]
         c["zone"] = c["zone"] or map_zone.get(c["map"])
+        # No map: the area ID still lets the game name the zone in the player's language.
+        c["area"] = zone_area(c["zone"], areas) if areas and c["map"] is None and c["zone"] else None
         out.append(c)
     out.sort(key=lambda c: (c["family"] or "", c["look"] is None, c["look"] or "", c["name"]))
     return out
@@ -100,7 +121,7 @@ def _lua(v):
     raise TypeError(type(v))
 
 
-FIELDS = ("id", "name", "family", "look", "min", "max", "cls", "zone", "map",
+FIELDS = ("id", "name", "family", "look", "min", "max", "cls", "zone", "map", "area",
           "tame", "note", "speed", "abilities", "coords")
 
 
@@ -171,7 +192,11 @@ def main():
             d = None
         if d:
             wh[i] = d
-    creatures = merge(hm, pet_rows, wh)
+    areas = area_ids(petopia.Fetcher(os.path.join(ROOT, ".cache", "wago")).get(AREA_TABLE_URL))
+    creatures = merge(hm, pet_rows, wh, areas)
+    unnamed = sorted({c["zone"] for c in creatures if c["zone"] and c["map"] is None and not c["area"]})
+    if unnamed:
+        print("zones without a map or an area (shown in English):", "; ".join(unnamed))
     validate(creatures)
     spells = ability_spells(HUNTMASTER_ABILITIES)
     used = {a[0] for c in creatures for a in c["abilities"]}

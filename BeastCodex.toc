@@ -3,7 +3,7 @@
 ## Notes: A hunter's codex of every tameable beast: filters, 3D preview and map pins.
 ## Author: Oleg (assantech.com.br)
 ## Category: Assan
-## Version: 1.1.2
+## Version: 1.1.3
 ## SavedVariables: BeastCodexDB
 ## IconTexture: Interface\AddOns\BeastCodex\Art\Icon
 

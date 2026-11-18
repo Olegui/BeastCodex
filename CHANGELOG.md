@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3
+
+- Zone filter: each zone is listed once. Sub-areas of the same map no longer show as repeated entries, and picking a zone shows every beast in it.
+- Dungeons, raids and the new Forever zones are named in the game's language instead of English.
+- The Selva theme is now called Jungle.
+
 ## 1.1.2
 
 - No changes to the addon. First version published to CurseForge straight from GitHub.
