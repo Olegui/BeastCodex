@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "아직 확인되지 않음: 이 야수는 게임 데이터가 �
 L.TARGET_WINDOW = "대상 창"
 L.TARGET = "대상"
 L.TARGET_COMBAT = "전투 중에는 대상 창을 바꿀 수 없습니다."
+L.GUIDE_FMT = "공략: %s"

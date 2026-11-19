@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "Ainda sem confirmação: este pet vem de relatos de jogadores, n
 L.TARGET_WINDOW = "Janela de alvo"
 L.TARGET = "Alvo"
 L.TARGET_COMBAT = "A janela de alvo não pode mudar durante o combate."
+L.GUIDE_FMT = "Guia: %s"

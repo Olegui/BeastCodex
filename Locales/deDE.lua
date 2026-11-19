@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "Noch nicht bestätigt: Dieses Tier stammt aus Spielerberichten, 
 L.TARGET_WINDOW = "Zielfenster"
 L.TARGET = "Ziel"
 L.TARGET_COMBAT = "Das Zielfenster kann im Kampf nicht geändert werden."
+L.GUIDE_FMT = "Anleitung: %s"

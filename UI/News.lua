@@ -69,6 +69,7 @@ local function newCard(parent, item, w, h)
   card:SetScript("OnEnter", function(self)
     hl:Show()
     if creature and ns.List.onEnter then ns.List.onEnter(creature) end
+    if not more and creature and ns.ShowGuide(self, creature, "ANCHOR_BOTTOM") then return end
     if more then
       GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
       GameTooltip:SetText(News.Text(item.title))

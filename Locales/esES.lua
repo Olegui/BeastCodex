@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "Aún sin confirmar: esta mascota viene de informes de jugadores,
 L.TARGET_WINDOW = "Ventana de objetivo"
 L.TARGET = "Objetivo"
 L.TARGET_COMBAT = "La ventana de objetivo no puede cambiar en combate."
+L.GUIDE_FMT = "Guía: %s"

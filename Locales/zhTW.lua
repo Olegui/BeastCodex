@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "尚未證實：此寵物來自玩家的回報，而非遊戲資�
 L.TARGET_WINDOW = "目標視窗"
 L.TARGET = "目標"
 L.TARGET_COMBAT = "戰鬥中無法變更目標視窗。"
+L.GUIDE_FMT = "攻略：%s"

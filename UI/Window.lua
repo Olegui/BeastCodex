@@ -113,12 +113,12 @@ end
 
 -- White glyphs from Art/Icons.tga (tools/make_icons.py), tinted per use.
 local ICON_FILE = "Interface\\AddOns\\BeastCodex\\Art\\Icons"
-local ICON_CELL = { rotLeft = 0, rotRight = 1, play = 2, pause = 3, alert = 4, chevUp = 5, chevDown = 6, close = 7 }
+local ICON_CELL = { rotLeft = 0, rotRight = 1, play = 2, pause = 3, alert = 4, chevUp = 5, chevDown = 6, close = 7, guide = 8 }
 
 function UI.SetIcon(t, name)
   local i = ICON_CELL[name]
   t:SetTexture(ICON_FILE)
-  t:SetTexCoord(i / 8, (i + 1) / 8, 0, 1)
+  t:SetTexCoord(i / 16, (i + 1) / 16, 0, 1)
 end
 
 -- A small round button showing one icon in the theme's accent, named by a

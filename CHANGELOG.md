@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2
+
+- Guides: beasts with a known way to get them show a book button on the model; hover it to read the steps, in all 11 languages. Item, zone and ability names come from the game. Ta'shkal has the first one.
+- Ta'shkal: shown on the map in Mount Hyjal (Show on map now works), level 57-58, teaches Prowl 3 and Cower 6, and the figurine's five known spots.
+
 ## 1.2.1
 
 - Ta'shkal is confirmed: a player has it tamed, and it matches the model shown in the codex. The rumor alert is gone.

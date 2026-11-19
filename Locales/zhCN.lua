@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "尚未证实：此宠物来自玩家的报告，而非游戏数�
 L.TARGET_WINDOW = "目标窗口"
 L.TARGET = "目标"
 L.TARGET_COMBAT = "战斗中无法更改目标窗口。"
+L.GUIDE_FMT = "攻略：%s"

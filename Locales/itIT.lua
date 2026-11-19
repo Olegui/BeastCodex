@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "Non ancora confermato: questo famiglio proviene da segnalazioni 
 L.TARGET_WINDOW = "Finestra bersaglio"
 L.TARGET = "Bersaglio"
 L.TARGET_COMBAT = "La finestra bersaglio non può cambiare in combattimento."
+L.GUIDE_FMT = "Guida: %s"

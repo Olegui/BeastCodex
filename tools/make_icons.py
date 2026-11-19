@@ -2,7 +2,7 @@
 
     .cache/venv/Scripts/python tools/make_icons.py
 
-One 64x64 cell per icon on a 512x64 canvas, in ICONS order; the order must
+One 64x64 cell per icon on a 1024x64 canvas (16 cells), in ICONS order; the order must
 match ICON_CELL in UI/Window.lua.
 """
 import math, os
@@ -14,7 +14,7 @@ from tools.make_rows import stroke
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CELL, SS = 64, 4
 WHITE = (255, 255, 255, 255)
-ICONS = ("rotLeft", "rotRight", "play", "pause", "alert", "chevUp", "chevDown", "close")
+ICONS = ("rotLeft", "rotRight", "play", "pause", "alert", "chevUp", "chevDown", "close", "guide")
 
 
 def polygon(points):
@@ -57,11 +57,23 @@ def build():
         "chevUp": lambda: stroke((CELL, CELL), [(14, 40), (32, 22), (50, 40)], WHITE, 6),
         "chevDown": lambda: stroke((CELL, CELL), [(14, 24), (32, 42), (50, 24)], WHITE, 6),
         "close": close,
+        "guide": guide,
     }
-    atlas = Image.new("RGBA", (CELL * 8, CELL), (0, 0, 0, 0))
+    atlas = Image.new("RGBA", (CELL * 16, CELL), (0, 0, 0, 0))
     for i, name in enumerate(ICONS):
         atlas.alpha_composite(draw[name](), (i * CELL, 0))
     return atlas
+
+
+def guide():
+    """An open book: two pages meeting at the spine, a line of text on each."""
+    icon = stroke((CELL, CELL), [(32, 18), (32, 50)], WHITE, 5)
+    for side in (-1, 1):
+        icon.alpha_composite(stroke((CELL, CELL), [(32, 18), (32 + side * 12, 13), (32 + side * 25, 16),
+                                                   (32 + side * 25, 47), (32 + side * 12, 44), (32, 50)], WHITE, 5))
+        icon.alpha_composite(stroke((CELL, CELL), [(32 + side * 8, 25), (32 + side * 18, 25)], WHITE, 3.5))
+        icon.alpha_composite(stroke((CELL, CELL), [(32 + side * 8, 33), (32 + side * 18, 33)], WHITE, 3.5))
+    return icon
 
 
 def close():

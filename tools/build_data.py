@@ -102,12 +102,15 @@ def sort_key(c):
 # shortcut: Ta'shkal (wowhead.com/forever/npc=268231, Level 58 Beast (Normal), Cat) is in no source the
 # builder reads; drop it from here once Petopia lists it, or the creature shows up twice.
 MANUAL = [
-    {"id": 268231, "name": "Ta'shkal", "family": "cat", "look": "tigerskingreen", "min": 58, "max": 58,
-     "cls": "spawned", "zone": "Mourning's Rest, Mount Hyjal", "map": None, "area": 616, "tame": True,
-     "note": "Loot the Corrupted Cat Figurine from a green slime pool in Felblood Scar, then use the "
-             "lantern on the hillside above the Mourning's Rest cave (27.0, 63.6) with it in your bags "
-             "to spawn this green and orange striped cat. Same 1.0 attack speed as Broken Tooth.",
-     "speed": 1.0, "abilities": [], "coords": []},
+    # Level, abilities and spots from a Wowhead comment (2026-11-16) and Icy Veins.
+    {"id": 268231, "name": "Ta'shkal", "family": "cat", "look": "tigerskingreen", "min": 57, "max": 58,
+     "cls": "spawned", "zone": "Mourning's Rest, Mount Hyjal", "map": 2482, "area": None, "tame": True,
+     "note": "Loot the Corrupted Cat Figurine from a fel pool with bones around it in Felblood Scar "
+             "(47 75; also 48 82, 44 76, 44 82, 46 76), then click the Lonely Lantern above the "
+             "Mourning's Rest cave (26 65) with it in your bags to spawn this green and orange cat. "
+             "Same 1.0 attack speed as Broken Tooth.",
+     # map: Mount Hyjal's uiMapID in the 1.60.1 UiMap table (wago.tools); coords: Wowhead's spawn points by the lantern.
+     "speed": 1.0, "abilities": [["Prowl", 3], ["Cower", 6]], "coords": [26.4, 65.2, 26.5, 65.4, 26.6, 64.4]},
 ]
 
 

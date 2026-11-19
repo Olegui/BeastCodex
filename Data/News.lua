@@ -2,7 +2,8 @@ local ADDON, ns = ...
 
 -- Written by hand, newest first: what the cards above the list say. Texts are
 -- per client language; a language without its own falls back to enUS.
--- `creature` (an NPC ID in Data/Creatures.lua) makes the card open that beast.
+-- `creature` (an NPC ID in Data/Creatures.lua) makes the card open that beast;
+-- hovering shows `more`, or else that beast's guide (Data/Guides.lua).
 ns.NewsItems = {
   {
     creature = 268231,
@@ -10,10 +11,6 @@ ns.NewsItems = {
     text = {
       enUS = "Green and orange cat in Mount Hyjal, 1.0 attack speed. Hover for how to summon it.",
       ptBR = "Felino verde e laranja em Monte Hyjal, velocidade de ataque 1.0. Passe o cursor para ver como invocá-lo.",
-    },
-    more = {
-      enUS = "Level 57 or higher. Loot the Corrupted Cat Figurine from a green slime pool in Felblood Scar, then use the lantern on the hillside above the Mourning's Rest cave (27.0, 63.6) with it in your bags.",
-      ptBR = "Nível 57 ou mais. Pegue a Corrupted Cat Figurine numa poça de lodo verde em Felblood Scar e use a lanterna na encosta acima da caverna de Mourning's Rest (27,0; 63,6) com ela na bolsa.",
     },
   },
   {

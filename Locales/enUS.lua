@@ -52,6 +52,7 @@ ns.L = setmetatable({
   TARGET_WINDOW = "Target window",
   TARGET = "Target",
   TARGET_COMBAT = "The target window can't change during combat.",
+  GUIDE_FMT = "Guide: %s",
 
   FAMILY_bat = "Bat", FAMILY_bear = "Bear", FAMILY_birdofprey = "Bird of Prey",
   FAMILY_boar = "Boar", FAMILY_carrionbird = "Carrion Bird", FAMILY_cat = "Cat",

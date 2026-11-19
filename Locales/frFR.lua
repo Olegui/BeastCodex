@@ -78,3 +78,4 @@ L.RUMOR_TEXT = "Pas encore confirmé : ce familier provient de témoignages de j
 L.TARGET_WINDOW = "Fenêtre de cible"
 L.TARGET = "Cibler"
 L.TARGET_COMBAT = "La fenêtre de cible ne peut pas changer en combat."
+L.GUIDE_FMT = "Guide : %s"

@@ -28,6 +28,45 @@ function ns.DietText(diet)
   return table.concat(parts, ", ")
 end
 
+-- The client's name for one of a guide's placeholders (Data/Guides.lua), English until it knows one.
+local function guideName(n)
+  if n.ability then return ns.AbilityName(n.ability) end
+  local ok, name = pcall(function()
+    if n.area then return C_Map.GetAreaInfo(n.area) end
+    if C_Item and C_Item.GetItemNameByID then return C_Item.GetItemNameByID(n.item) end
+    return (GetItemInfo(n.item))
+  end)
+  if ok and type(name) == "string" and name ~= "" then return name end
+  -- Items come from the server: ask now, so the next look has the name.
+  if n.item and C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, n.item) end
+  return n.en
+end
+
+-- A creature's guide in the client's language with its placeholders filled, or nil without one.
+function ns.GuideLines(c, locale)
+  local g = c and ns.Guides and ns.Guides[c.id]
+  if not g then return nil end
+  local out = {}
+  for i, line in ipairs(g.text[locale or GetLocale()] or g.text.enUS) do
+    out[i] = (line:gsub("{(%w+)}", function(key)
+      if key == "name" then return ns.LocalName(c) end
+      return g.names[key] and guideName(g.names[key]) -- nil leaves an unknown placeholder as written
+    end))
+  end
+  return out
+end
+
+-- Shows a creature's guide in the tooltip, anchored to `owner`; false without one.
+function ns.ShowGuide(owner, c, anchor)
+  local lines = ns.GuideLines(c)
+  if not lines then return false end
+  GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
+  GameTooltip:SetText(L.GUIDE_FMT:format(ns.LocalName(c)))
+  for _, line in ipairs(lines) do GameTooltip:AddLine(line, 1, 1, 1, true) end
+  GameTooltip:Show()
+  return true
+end
+
 -- The text lines for a creature. Kept apart from the frames so it can be checked.
 function Detail.Lines(c)
   local lines = {}
@@ -119,6 +158,7 @@ function Detail:Show(c)
   if self.shown == c then return end
   self.shown = c
   self.rumor:SetShown(c and c.rumor or false)
+  self.guide:SetShown(c and ns.Guides[c.id] ~= nil or false)
   if not c then
     pcall(self.model.ClearModel, self.model)
     self.name:SetText("")
@@ -199,6 +239,12 @@ function Detail:Create(parent)
   self.rumor.tooltipText = L.RUMOR_TEXT
   self.rumor:Hide()
 
+  -- Top left of the model, only for a creature with a guide (Data/Guides.lua): hover reads it.
+  self.guide = UI.IconButton(model, size, "guide", "")
+  self.guide:SetPoint("TOPLEFT", 6, -6)
+  self.guide:SetScript("OnEnter", function(b) ns.ShowGuide(b, self.shown) end)
+  self.guide:Hide()
+
   self.name = UI.Text(parent, S.name, "GameFontNormalLarge", c.title, S.name.center and "CENTER" or "LEFT")
   self.name:SetWordWrap(false)
   self.text = UI.Text(parent, S.text, "GameFontHighlightSmall", c.text)
@@ -254,6 +300,40 @@ table.insert(ns.tests, { "detail: lines for a tameable rare with abilities", fun
     L.DIET_FMT:format(L.DIET_MEAT),
   }, "\n")
   assert(t == want, t)
+end })
+
+table.insert(ns.tests, { "guides: every language has the same steps and placeholders as English", function()
+  for id, g in pairs(ns.Guides) do
+    assert(ns.News.Creature(id), "guide for a missing beast " .. id)
+    local en = g.text.enUS
+    assert(en and #en > 0, "guide " .. id .. " has no English text")
+    local function keys(lines)
+      local set = {}
+      for _, line in ipairs(lines) do for k in line:gmatch("{(%w+)}") do set[k] = true end end
+      return set
+    end
+    local want = keys(en)
+    for k in pairs(want) do assert(k == "name" or g.names[k], "guide " .. id .. ": unknown placeholder " .. k) end
+    for loc, lines in pairs(g.text) do
+      assert(#lines == #en, ("guide %d %s: %d steps, English has %d"):format(id, loc, #lines, #en))
+      local have = keys(lines)
+      for k in pairs(want) do assert(have[k], ("guide %d %s: missing {%s}"):format(id, loc, k)) end
+      for k in pairs(have) do assert(want[k], ("guide %d %s: extra {%s}"):format(id, loc, k)) end
+    end
+  end
+end })
+
+table.insert(ns.tests, { "guides: placeholders become the game's names, English when it has none", function()
+  local oldGuides, oldMap, oldItem = ns.Guides, C_Map, C_Item
+  ns.Guides = { [910001] = { names = { place = { area = 5, en = "Place" }, thing = { item = 7, en = "Thing" } },
+    text = { enUS = { "{name} at {place} with {thing} and {other}" } } } }
+  C_Map = { GetAreaInfo = function(id) return id == 5 and "Lugar" or nil end }
+  C_Item = { GetItemNameByID = function() return nil end }
+  local line = ns.GuideLines({ id = 910001, name = "Beast" }, "ptBR")[1]
+  local none = ns.GuideLines({ id = 910002, name = "Other" })
+  ns.Guides, C_Map, C_Item = oldGuides, oldMap, oldItem
+  assert(line:find("at Lugar with Thing and {other}", 1, true), line)
+  assert(none == nil)
 end })
 
 table.insert(ns.tests, { "detail: diets and abilities in the player's language", function()
