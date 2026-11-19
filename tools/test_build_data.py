@@ -75,7 +75,8 @@ class MergeTest(unittest.TestCase):
         out = build_data.add_manual(build_data.merge({30: HM_SPIDER}, [PET_SNARLER], {}))
         self.assertEqual([c["family"] for c in out], ["cat", "spider", "wolf"])
         build_data.validate(out)
-        self.assertEqual(set(out[0]), set(build_data.FIELDS))
+        self.assertLessEqual(set(out[0]) - {"rumor"}, set(build_data.FIELDS))  # rumor is optional
+        self.assertLessEqual(set(build_data.FIELDS) - {"rumor"}, set(out[0]))
 
     def test_huntmaster_map_equal_to_area_is_not_a_map(self):
         # Huntmaster puts the area ID where the uiMapID should be for the new Forever zone.

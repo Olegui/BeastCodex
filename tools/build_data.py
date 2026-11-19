@@ -103,7 +103,7 @@ def sort_key(c):
 # builder reads; drop it from here once Petopia lists it, or the creature shows up twice.
 MANUAL = [
     {"id": 268231, "name": "Ta'shkal", "family": "cat", "look": "tigerskingreen", "min": 58, "max": 58,
-     "cls": "spawned", "zone": "Mourning's Rest, Mount Hyjal", "map": None, "area": 616, "tame": True, "rumor": True,
+     "cls": "spawned", "zone": "Mourning's Rest, Mount Hyjal", "map": None, "area": 616, "tame": True,
      "note": "Loot the Corrupted Cat Figurine from a green slime pool in Felblood Scar, then use the "
              "lantern on the hillside above the Mourning's Rest cave (27.0, 63.6) with it in your bags "
              "to spawn this green and orange striped cat. Same 1.0 attack speed as Broken Tooth.",

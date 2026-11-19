@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Ta'shkal is confirmed: a player has it tamed, and it matches the model shown in the codex. The rumor alert is gone.
+
 ## 1.2.0
 
 - New pet: Ta'shkal, a green and orange cat in Mount Hyjal with 1.0 attack speed, summoned with the Corrupted Cat Figurine. Marked as a rumor until a data source confirms it.
