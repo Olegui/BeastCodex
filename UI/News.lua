@@ -26,14 +26,25 @@ function News.Height(rowH, collapsed)
 end
 
 function News.CardHeight(rowH)
-  return rowH * 3 + 8
+  return rowH * 3 + 12
+end
+
+-- An item's icon texture: `icon` is a spell ID (its icon, from the client) or a texture path.
+function News.Icon(icon)
+  if type(icon) ~= "number" then return icon end
+  local ok, tex = pcall(function()
+    if C_Spell and C_Spell.GetSpellTexture then return C_Spell.GetSpellTexture(icon) end
+    return GetSpellTexture(icon)
+  end)
+  return ok and tex or nil
 end
 
 local function newCard(parent, item, w, h)
   local c = ns.Skin.colors
   local card = CreateFrame("Button", nil, parent)
   card:SetSize(w, h)
-  ns.UI.Box(card)
+  -- Set apart from the rows: the selected row's accent rim and glow, as a box.
+  if not ns.UI.Slice(card, "BACKGROUND", "cardFeatured") then ns.UI.Box(card) end
   -- Hover lights the box like a hovered row: the hover slice laid over it.
   local hl = CreateFrame("Frame", nil, card)
   hl:SetAllPoints()
@@ -44,15 +55,41 @@ local function newCard(parent, item, w, h)
     t:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   end
 
-  local title = card:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-  title:SetPoint("TOPLEFT", 8, -7)
-  title:SetWidth(w - 16)
+  -- The game's icon, round, in the theme's round rim, beside the title.
+  local size = ns.Skin.rowH
+  local tex = News.Icon(item.icon)
+  local icon
+  if tex then
+    icon = card:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(size, size)
+    icon:SetPoint("TOPLEFT", 8, -7)
+    icon:SetTexture(tex)
+    if card.CreateMaskTexture then
+      local mask = card:CreateMaskTexture()
+      mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+      mask:SetAllPoints(icon)
+      icon:AddMaskTexture(mask)
+    end
+    local rim = ns.UI.Atlas(card, "BORDER", "box")
+    if rim then
+      rim:SetPoint("TOPLEFT", icon, "TOPLEFT", -3, 3)
+      rim:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3, -3)
+    end
+  end
+
+  local title = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  if icon then
+    title:SetPoint("LEFT", icon, "RIGHT", 7, 0)
+  else
+    title:SetPoint("TOPLEFT", 8, -7)
+  end
+  title:SetWidth(w - 16 - (icon and size + 7 or 0))
   title:SetJustifyH("LEFT")
   title:SetWordWrap(false)
   title:SetTextColor(c.header[1], c.header[2], c.header[3])
   title:SetText(News.Text(item.title))
   local text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  text:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
+  text:SetPoint("TOPLEFT", 8, -(7 + (icon and size + 5 or 16)))
   text:SetWidth(w - 16)
   text:SetJustifyH("LEFT")
   text:SetJustifyV("TOP")
@@ -148,4 +185,12 @@ end })
 table.insert(ns.tests, { "news: folded cards give the list its room back", function()
   assert(News.Height(25, true) < News.Height(25, false))
   assert(News.Height(25, false) == 25 + 2 + News.CardHeight(25) + 8)
+end })
+
+table.insert(ns.tests, { "news: an icon is a texture path or a spell's icon", function()
+  local old = C_Spell
+  C_Spell = { GetSpellTexture = function(id) return id == 1130 and 132212 or nil end }
+  local spell, path, none = News.Icon(1130), News.Icon("Interface\\Icons\\X"), News.Icon(nil)
+  C_Spell = old
+  assert(spell == 132212 and path == "Interface\\Icons\\X" and none == nil)
 end })

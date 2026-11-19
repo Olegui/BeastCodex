@@ -202,6 +202,13 @@ def build(name):
     disc = rounded((CARD, CARD), CARD // 2, (255, 255, 255, 110))
     disc.alpha_composite(rounded((CARD, CARD), CARD // 2, (0, 0, 0, 0), (255, 255, 255, 255), 3).filter(ImageFilter.GaussianBlur(1.5)))
     atlas.alpha_composite(disc, (3 * (CARD + 8), CARD_Y))
+    # News card: the selected row's look (accent rim, soft inner glow, faint accent fill) as a box.
+    featured = rounded((CARD, CARD), 9, fill)
+    featured.alpha_composite(rounded((CARD, CARD), 9, accent + (34,)))
+    glow = rounded((CARD, CARD), 9, (0, 0, 0, 0), accent + (255,), 5).filter(ImageFilter.GaussianBlur(4))
+    featured.alpha_composite(glow)
+    featured.alpha_composite(rounded((CARD, CARD), 9, (0, 0, 0, 0), accent + (255,), 2))
+    atlas.alpha_composite(featured, (4 * (CARD + 8), CARD_Y))
     return atlas
 
 

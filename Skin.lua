@@ -113,6 +113,7 @@ local function panels(look)
         cardHover = { 56, 320, 48, 48 }, -- its hovered look
         panel = { 112, 320, 48, 48 },    -- nearly opaque box for the target window
         disc = { 168, 320, 48, 48 },     -- white disc: the red glow of round close buttons
+        cardFeatured = { 224, 320, 48, 48 }, -- news card: accent rim and glow, like a selected row
       },
     },
     label = look.label,
