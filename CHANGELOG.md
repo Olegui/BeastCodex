@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.4
+
+- Hover no longer spills past round buttons and the target window's button: it takes each control's own shape.
+- The list sits centered in its panel, with the same margin on both sides.
+- Each session starts with the full list: the search and the filters no longer carry over from the last time you played.
+- The window no longer mixes with other addons' windows: opening or clicking it brings all of it to the front.
+
 ## 1.2.3
 
 - News cards stand out from the list: the theme's accent rim and glow, a larger title, and the game's icon beside it.

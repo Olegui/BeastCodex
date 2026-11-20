@@ -31,20 +31,7 @@ function ns.SanitizeDB(db, creatures)
   end
   if type(db.targetOpen) == "number" then out.targetOpen = db.targetOpen end
 
-  local f = type(db.filters) == "table" and db.filters or {}
-  local families, zones = {}, {}
-  for _, c in ipairs(creatures) do
-    families[c.family] = true
-    if c.zone then zones[c.zone] = true end
-  end
-  if type(f.family) == "string" and families[f.family] then out.filters.family = f.family end
-  if type(f.zone) == "string" and zones[f.zone] then out.filters.zone = f.zone end
-  if type(f.bucket) == "number" and f.bucket >= 1 and f.bucket <= math.ceil(ns.MaxLevel / 10) then
-    out.filters.bucket = math.floor(f.bucket)
-  end
-  if type(f.showUntameable) == "boolean" then out.filters.showUntameable = f.showUntameable end
-  if type(f.onlyLocated) == "boolean" then out.filters.onlyLocated = f.onlyLocated end
-  if type(f.search) == "string" then out.filters.search = f.search end
+  -- Search and filters are not read back: a new session starts with the full list.
   return out
 end
 
@@ -157,16 +144,12 @@ table.insert(ns.tests, { "db: missing table gets defaults", function()
   assert(db.filters.showUntameable == true and db.filters.search == "" and type(db.minimap) == "table")
 end })
 
-table.insert(ns.tests, { "db: stale or wrongly typed filters are dropped", function()
-  local db = ns.SanitizeDB({ filters = { family = "dragon", zone = 5, bucket = "x", showUntameable = "no", search = {} } }, sample)
+table.insert(ns.tests, { "db: saved search and filters do not carry into a new session", function()
+  local db = ns.SanitizeDB({ minimap = { hide = true }, filters = { family = "wolf", zone = "Feralas", bucket = 2,
+    showUntameable = false, onlyLocated = true, search = "sn" } }, sample)
   assert(db.filters.family == nil and db.filters.zone == nil and db.filters.bucket == nil)
-  assert(db.filters.showUntameable == true and db.filters.search == "")
-end })
-
-table.insert(ns.tests, { "db: valid filters survive", function()
-  local db = ns.SanitizeDB({ minimap = { hide = true }, filters = { family = "wolf", zone = "Feralas", bucket = 2, showUntameable = false, search = "sn" } }, sample)
-  assert(db.filters.family == "wolf" and db.filters.zone == "Feralas" and db.filters.bucket == 2)
-  assert(db.filters.showUntameable == false and db.filters.search == "sn" and db.minimap.hide == true)
+  assert(db.filters.showUntameable == true and db.filters.onlyLocated == false and db.filters.search == "")
+  assert(db.minimap.hide == true)
 end })
 
 table.insert(ns.tests, { "db: unknown theme falls back to the default, known theme survives", function()
@@ -174,8 +157,6 @@ table.insert(ns.tests, { "db: unknown theme falls back to the default, known the
   assert(ns.SanitizeDB({ theme = "nope" }, sample).theme == ns.DEFAULT_THEME)
   assert(ns.SanitizeDB({ theme = 5 }, sample).theme == ns.DEFAULT_THEME)
   assert(ns.SanitizeDB(nil, sample).theme == ns.DEFAULT_THEME)
-  assert(ns.SanitizeDB({ filters = { onlyLocated = true } }, sample).filters.onlyLocated == true)
-  assert(ns.SanitizeDB({ filters = { onlyLocated = "x" } }, sample).filters.onlyLocated == false)
   for name in pairs(ns.Themes) do assert(ns.SanitizeDB({ theme = name }, sample).theme == name) end
 end })
 
@@ -213,13 +194,20 @@ table.insert(ns.tests, { "theme: every theme defines every rectangle the window 
         assert(p[1] >= 0 and p[2] >= 0 and p[1] + p[3] <= t.rowArt.texW and p[2] + p[4] <= t.rowArt.texH,
           name .. " atlas piece out of bounds: " .. piece)
       end
-      for _, key in ipairs({ "themeButton", "mapButton", "clearButton", "resetButton", "targetButton" }) do
-        for _, field in ipairs({ "face", "offFace" }) do
-          local piece = t[key][field]
-          assert(piece == nil or t.rowArt.faces[piece], name .. "." .. key .. " names a missing atlas piece")
+      -- Hover never spills past a button: each one names the shape its hover takes
+      -- (its face, its "off" face, a hoverFace, or the red disc of a round close button).
+      local buttons = { themeButton = t.themeButton, mapButton = t.mapButton, clearButton = t.clearButton,
+        resetButton = t.resetButton, targetButton = t.targetButton, close = t.close, searchClear = t.searchClear }
+      for i, f in ipairs(t.filters) do buttons["filter" .. i] = f end
+      for key, r in pairs(buttons) do
+        assert(r.face or r.offFace or r.hoverFace or r.glow == "red", name .. "." .. key .. " has a square hover")
+        for _, field in ipairs({ "face", "offFace", "hoverFace" }) do
+          assert(r[field] == nil or t.rowArt.faces[r[field]], name .. "." .. key .. " names a missing atlas piece")
         end
       end
-    end
+      for _, piece in ipairs({ "disc", "pillGlow", "box" }) do -- round icon buttons, painted pills, rims
+        assert(t.rowArt.faces[piece], name .. " atlas lacks " .. piece)
+      end    end
   end
 end })
 

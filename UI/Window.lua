@@ -141,9 +141,16 @@ function UI.IconButton(parent, size, icon, tooltip, color)
   local tint = color or c.header
   b.icon:SetVertexColor(tint[1], tint[2], tint[3])
   UI.SetIcon(b.icon, icon)
-  local hl = b:CreateTexture(nil, "HIGHLIGHT")
+  -- Round hover for a round button; a square one only where the button is square too.
+  local hl = UI.Atlas(b, "HIGHLIGHT", "disc")
+  if hl then
+    hl:SetBlendMode("ADD")
+    hl:SetVertexColor(c.header[1], c.header[2], c.header[3], 0.45)
+  else
+    hl = b:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
+  end
   hl:SetAllPoints()
-  hl:SetColorTexture(c.hover[1], c.hover[2], c.hover[3], c.hover[4])
   b.tooltip = tooltip
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -285,8 +292,8 @@ function UI.Button(parent, r, text, showLabel, template)
   if b.off then b.off:Hide() end
   -- Hover lights the button's own shape (its face, or the shape of the painted
   -- button under it), in the accent; nothing square spills past round corners.
-  local shape = r.face or r.offFace
-  local glow = shape and UI.Face(b, "HIGHLIGHT", shape, r.face and facePad or ns.Skin.rowArt.offPad or 0, r)
+  local shape = r.face or r.offFace or r.hoverFace
+  local glow = shape and UI.Face(b, "HIGHLIGHT", shape, (r.face or r.hoverFace) and facePad or ns.Skin.rowArt.offPad or 0, r)
   if glow then
     glow:SetBlend("ADD")
     glow:SetColor(c.header[1], c.header[2], c.header[3], 0.45)
@@ -351,7 +358,9 @@ local function buildMenu(parent)
   catcher:SetFrameStrata("DIALOG")
   catcher:Hide()
 
-  local m = CreateFrame("Frame", nil, parent)
+  -- On UIParent, not the window: the window is toplevel, and raising it re-levels its children, which
+  -- could drop the popup under the catcher and turn every pick into a "click outside".
+  local m = CreateFrame("Frame", nil, UIParent)
   m:SetFrameStrata("DIALOG")
   m:SetFrameLevel(catcher:GetFrameLevel() + 10)
   m:SetClampedToScreen(true)
@@ -456,6 +465,7 @@ function UI.OpenMenu(owner, items, isSelected, onPick)
   m:SetSize(math.max(owner:GetWidth(), 150), math.min(#items, MENU_MAX) * MENU_ROW + 6)
   m:Paint()
   m.catcher:Show()
+  m:SetFrameLevel(m.catcher:GetFrameLevel() + 10)
   m:Show()
 end
 
@@ -615,6 +625,9 @@ function Window:Create()
   f:SetSize(S.W, S.H)
   f:SetPoint("CENTER")
   f:SetFrameStrata("HIGH")
+  -- toplevel: a click raises the whole window (children included) above other windows in HIGH, so they never interleave
+  f:SetToplevel(true)
+  f:HookScript("OnShow", f.Raise)
   f:SetMovable(true)
   f:EnableMouse(true)
   f:SetClampedToScreen(true)

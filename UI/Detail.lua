@@ -295,7 +295,7 @@ table.insert(ns.tests, { "detail: lines for a tameable rare with abilities", fun
   local want = table.concat({
     L.FAMILY_wolf .. ", " .. L.LEVEL_FMT:format("42") .. ", " .. L.RARE,
     "Feralas",
-    L.TEACHES_FMT:format("Bite 6, Furious Howl 3"),
+    L.TEACHES_FMT:format(ns.AbilityName("Bite") .. " 6, " .. ns.AbilityName("Furious Howl") .. " 3"),
     L.ATTACK_SPEED_FMT:format(2.0),
     L.DIET_FMT:format(L.DIET_MEAT),
   }, "\n")

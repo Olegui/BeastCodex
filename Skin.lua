@@ -35,7 +35,8 @@ ns.Themes.classic = {
   themeButton = { x = 474, y = 29, w = 190, h = 26 },
   count = { x = 22, y = 522, w = 188 },
   credits = { x = 10, y = 558, w = 880 },
-  list = { x = 234, y = 68, w = 410, h = 472 },
+  -- Inside the middle inset (226..650): 26 units each side; the right one holds the scroll bar, 4 in.
+  list = { x = 252, y = 68, w = 394, h = 472 },
   rowH = 20,
   model = { x = 662, y = 68, w = 222, h = 196 },
   name = { x = 664, y = 274, w = 218 },
@@ -114,6 +115,7 @@ local function panels(look)
         panel = { 112, 320, 48, 48 },    -- nearly opaque box for the target window
         disc = { 168, 320, 48, 48 },     -- white disc: the red glow of round close buttons
         cardFeatured = { 224, 320, 48, 48 }, -- news card: accent rim and glow, like a selected row
+        pillGlow = { 280, 320, 96, 40 },  -- white pill: hover of pill-shaped buttons painted in the art
       },
     },
     label = look.label,
@@ -139,7 +141,9 @@ local function panels(look)
     resetButton = { x = 164, y = 690, w = 310, h = 50, face = "red", facePad = 2.9, labelY = 2, font = "GameFontNormal",
       textColor = { 1, 0.91, 0.84 } },
     count = look.count or { x = 166, y = 1084, w = 310 },
-    list = { x = 552, y = 226, w = 820, h = 892 },
+    -- The panel's stitching runs at x 545.5 and 1372.5. Rows keep 15 units (31 here)
+    -- from it on both sides; on the right that holds the scroll bar, 4 units in.
+    list = { x = 577, y = 226, w = 787, h = 892 },
     model = { x = 1458, y = 250, w = 380, h = 354 },
     name = { x = 1452, y = 640, w = 404 },
     text = { x = 1452, y = 704, w = 404, h = 168 }, -- ends above the target button

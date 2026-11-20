@@ -209,6 +209,10 @@ def build(name):
     featured.alpha_composite(glow)
     featured.alpha_composite(rounded((CARD, CARD), 9, (0, 0, 0, 0), accent + (255,), 2))
     atlas.alpha_composite(featured, (4 * (CARD + 8), CARD_Y))
+    # White pill, brightest at the rim: hover glow for pill-shaped buttons painted in the art.
+    pill_glow = rounded((96, 40), 20, (255, 255, 255, 70))
+    pill_glow.alpha_composite(rounded((96, 40), 20, (0, 0, 0, 0), (255, 255, 255, 255), 3).filter(ImageFilter.GaussianBlur(1.5)))
+    atlas.alpha_composite(pill_glow, (5 * (CARD + 8), CARD_Y))
     return atlas
 
 

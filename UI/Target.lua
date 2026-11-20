@@ -107,7 +107,8 @@ local function build()
   -- On the art the button face is painted: only the label goes over it.
   local r = {}
   if art then
-    r = { label = true, font = "GameFontNormalSmall", textColor = art.textColor }
+    -- hoverFace: the painted gold button is a pill, so its hover is one too.
+    r = { label = true, font = "GameFontNormalSmall", textColor = art.textColor, hoverFace = "pillGlow", pill = true }
   else
     for key, v in pairs(S.targetButton) do r[key] = v end
   end
